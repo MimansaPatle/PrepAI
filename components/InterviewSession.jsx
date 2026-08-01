@@ -9,7 +9,7 @@ export default function InterviewSession() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [currentAnswer, setCurrentAnswer] = useState("");
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(300);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingText, setRecordingText] = useState("");
 
@@ -43,7 +43,7 @@ export default function InterviewSession() {
   const searchParams = useSearchParams();
   const interviewId = searchParams.get("id");
 
-  const TOTAL_QUESTIONS = 2;
+  const TOTAL_QUESTIONS = 4;
 
 
   useEffect(() => {
@@ -135,7 +135,7 @@ export default function InterviewSession() {
 
     if (loadingStage) return;
 
-    setTimeLeft(120);
+    setTimeLeft(300);
 
     const timer = setInterval(() => {
 
@@ -143,7 +143,7 @@ export default function InterviewSession() {
 
         if (prev <= 1) {
           handleNextQuestion("");
-          return 120;
+          return 300;
         }
 
         return prev - 1;

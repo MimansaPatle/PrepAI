@@ -1,27 +1,35 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from "next/navigation";
-import { 
-  IoTerminalOutline, 
-  IoLockClosedOutline, 
-  IoMailOutline, 
+import {
+  IoTerminalOutline,
+  IoLockClosedOutline,
+  IoMailOutline,
   IoPersonOutline,
-  IoBriefcaseOutline, 
-  IoCodeSlashOutline, 
-  IoBusinessOutline, 
-  IoBuildOutline 
+  IoBriefcaseOutline,
+  IoCodeSlashOutline,
+  IoBusinessOutline,
+  IoBuildOutline
 } from 'react-icons/io5';
-import { signIn } from "next-auth/react";
+import { CheckCircle2, Circle } from "lucide-react";
+import { signIn, getSession } from "next-auth/react";
 
 export default function LoginView({ onLogin }) {
   // Mode switcher state: 'login' or 'register'
   const [authMode, setAuthMode] = useState('login');
   const router = useRouter();
-  
+
   // Input tracking states configured with your default schema parameters
   const [name, setName] = useState('Mimansa');
   const [email, setEmail] = useState('mimansa@test.com');
-  const [password, setPassword] = useState('123456');
+  const [password, setPassword] = useState("");
+  const passwordChecks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[@$!%*?&]/.test(password),
+  };
   const [experience, setExperience] = useState('Fresher');
   const [favoriteRole, setFavoriteRole] = useState('Frontend Developer');
   const [targetCompany, setTargetCompany] = useState('');
@@ -29,60 +37,70 @@ export default function LoginView({ onLogin }) {
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  // ---------- REGISTER ----------
-  if (authMode === "register") {
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          experience,
-          favoriteRole,
-          targetCompany,
-          skills,
-        }),
-      });
+    // ---------- REGISTER ----------
+    if (authMode === "register") {
+      try {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            experience,
+            favoriteRole,
+            targetCompany,
+            skills,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        setError(data.message);
-        return;
+        if (!response.ok) {
+          setError(data.message);
+          return;
+        }
+
+        alert("Account created successfully!");
+
+        setAuthMode("login");
+
+      } catch (error) {
+        setError("Something went wrong.");
       }
 
-      alert("Account created successfully!");
-
-      setAuthMode("login");
-
-    } catch (error) {
-      setError("Something went wrong.");
+      return;
     }
 
-    return;
-  }
+    // ---------- LOGIN ----------
+    const result = await signIn("credentials", {
+  email,
+  password,
+  redirect: false,
+});
 
-  // ---------- LOGIN ----------
-  const result = await signIn("credentials", {
-    email,
-    password,
-    redirect: false,
-  });
+if (result?.error) {
+  setError(result.error);
+  return;
+}
 
-  if (result?.error) {
-    setError(result.error);
-    return;
-  }
+// Get the newly created session
+const session = await getSession();
 
+// Redirect based on role
+if (session?.user?.role === "admin") {
+  router.push("/admin");
+} else {
   router.push("/dashboard");
-};
+}
+
+router.refresh();
+  };
 
   const toggleMode = () => {
     setError('');
@@ -99,8 +117,8 @@ export default function LoginView({ onLogin }) {
           {authMode === 'login' ? 'Welcome to PrepAI' : 'Create Sandbox Account'}
         </h2>
         <p className="text-zinc-500 text-xs mt-1 text-center">
-          {authMode === 'login' 
-            ? 'Sign in to initialize your automated workspace' 
+          {authMode === 'login'
+            ? 'Sign in to initialize your automated workspace'
             : 'Register your engineering credentials to start simulation metrics'
           }
         </p>
@@ -118,13 +136,13 @@ export default function LoginView({ onLogin }) {
           <div>
             <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
             <div className="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Mimansa Patle" 
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700" 
+                placeholder="e.g., Mimansa Patle"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
               />
               <IoPersonOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
             </div>
@@ -135,13 +153,13 @@ export default function LoginView({ onLogin }) {
         <div>
           <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
           <div className="relative">
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="developer@domain.com" 
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700" 
+              placeholder="developer@domain.com"
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
             />
             <IoMailOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
           </div>
@@ -154,7 +172,7 @@ export default function LoginView({ onLogin }) {
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Experience</label>
                 <div className="relative">
-                  <select 
+                  <select
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 appearance-none cursor-pointer"
@@ -170,7 +188,7 @@ export default function LoginView({ onLogin }) {
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Favorite Role</label>
                 <div className="relative">
-                  <select 
+                  <select
                     value={favoriteRole}
                     onChange={(e) => setFavoriteRole(e.target.value)}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 appearance-none cursor-pointer"
@@ -188,12 +206,12 @@ export default function LoginView({ onLogin }) {
             <div>
               <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Target Company</label>
               <div className="relative">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={targetCompany}
                   onChange={(e) => setTargetCompany(e.target.value)}
-                  placeholder="e.g., Google, Amazon" 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700" 
+                  placeholder="e.g., Google, Amazon"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
                 />
                 <IoBusinessOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
               </div>
@@ -202,12 +220,12 @@ export default function LoginView({ onLogin }) {
             <div>
               <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Core Skills Matrix</label>
               <div className="relative">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
-                  placeholder="e.g., React, Tailwind CSS, JavaScript" 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700" 
+                  placeholder="e.g., React, Tailwind CSS, JavaScript"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
                 />
                 <IoBuildOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
               </div>
@@ -219,19 +237,53 @@ export default function LoginView({ onLogin }) {
         <div>
           <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Passcode</label>
           <div className="relative">
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" 
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700" 
+              placeholder="••••••••"
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
             />
             <IoLockClosedOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
           </div>
+          {authMode === "register" && password.length > 0 && (
+            <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-2">
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                Password Requirements
+              </p>
+
+              <PasswordItem
+                ok={passwordChecks.length}
+                text="At least 8 characters"
+              />
+
+              <PasswordItem
+                ok={passwordChecks.uppercase}
+                text="One uppercase letter"
+              />
+
+              <PasswordItem
+                ok={passwordChecks.lowercase}
+                text="One lowercase letter"
+              />
+
+              <PasswordItem
+                ok={passwordChecks.number}
+                text="One number"
+              />
+
+              <PasswordItem
+                ok={passwordChecks.special}
+                text="One special character"
+              />
+
+            </div>
+          )}
         </div>
 
-        <button 
+        <button
           type="submit"
           className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-violet-600/10 mt-2 hover:scale-[1.01]"
         >
@@ -240,16 +292,36 @@ export default function LoginView({ onLogin }) {
       </form>
 
       <div className="mt-6 pt-4 border-t border-zinc-800/60 text-center">
-        <button 
+        <button
           onClick={toggleMode}
           className="text-xs text-zinc-400 hover:text-violet-400 transition underline decoration-zinc-700 underline-offset-4"
         >
-          {authMode === 'login' 
-            ? "Don't have an account? Sign up here" 
+          {authMode === 'login'
+            ? "Don't have an account? Sign up here"
             : 'Already registered? Return to login'
           }
         </button>
       </div>
+    </div>
+  );
+}
+
+function PasswordItem({ ok, text }) {
+  return (
+    <div
+      className={`flex items-center gap-2 text-sm transition ${
+        ok
+          ? "text-emerald-400"
+          : "text-zinc-500"
+      }`}
+    >
+      {ok ? (
+        <CheckCircle2 className="w-4 h-4" />
+      ) : (
+        <Circle className="w-4 h-4" />
+      )}
+
+      <span>{text}</span>
     </div>
   );
 }

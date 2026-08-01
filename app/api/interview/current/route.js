@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import connectDB from "@/lib/mongodb";
 import Interview from "@/models/Interview";
-import User from "@/models/User";
 
 export async function GET() {
   try {
@@ -22,12 +21,10 @@ export async function GET() {
 
     await connectDB();
 
-    const user = await User.findOne({
-      email: session.user.email,
-    });
+  
 
     const interview = await Interview.findOne({
-      user: user._id,
+      user: session.user.id,
       status: "started",
       completedAt: null,
       "questions.0": { $exists: true },

@@ -38,7 +38,46 @@ export async function POST(request) {
             );
         }
 
-        const existingUser = await User.findOne({ email });
+        // Normalize email FIRST
+        const normalizedEmail = email.trim().toLowerCase();
+
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(normalizedEmail)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Please enter a valid email address.",
+                },
+                {
+                    status: 400,
+                }
+            );
+        }
+
+        // Validate password
+        const passwordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message:
+                        "Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character.",
+                },
+                {
+                    status: 400,
+                }
+            );
+        }
+
+
+        // Check duplicate email
+        const existingUser = await User.findOne({
+            email: normalizedEmail,
+        });
 
         if (existingUser) {
             return NextResponse.json(
@@ -55,8 +94,8 @@ export async function POST(request) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await User.create({
-            name,
-            email,
+            name: name.trim(),
+            email: normalizedEmail,
             password: hashedPassword,
             experience,
             favoriteRole,
@@ -84,16 +123,16 @@ export async function POST(request) {
         );
 
     } catch (error) {
+        console.error("Signup error:", error);
 
         return NextResponse.json(
             {
                 success: false,
-                message: error.message,
+                message: "Failed to create account.",
             },
             {
-                status: 500,  // 500 is the status code for internal server error, which means the server encountered an unexpected condition that prevented it from fulfilling the request. In this case, it indicates that an error occurred while processing the signup request on the server side.
+                status: 500,
             }
         );
-
     }
 }

@@ -1,28 +1,28 @@
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.GEMINI_API_KEY,
 });
 
 export async function generateQuestion(
-  config,
-  previousQuestions = [],
-  previousAnswers = []
+    config,
+    previousQuestions = [],
+    previousAnswers = []
 ) {
-  const history = previousQuestions
-    .map((q, i) => {
-      const answer = previousAnswers[i] || "";
-      return `
+    const history = previousQuestions
+        .map((q, i) => {
+            const answer = previousAnswers[i] || "";
+            return `
 Question ${i + 1}:
 ${q}
 
 Candidate Answer:
 ${answer}
 `;
-    })
-    .join("\n");
+        })
+        .join("\n");
 
-  const prompt = `
+    const prompt = `
 You are an experienced senior software engineer conducting a REAL interview.
 
 Candidate Details:
@@ -48,21 +48,21 @@ Instructions:
 - Return ONLY the question.
 
 `;
-  const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
-    contents: prompt,
-  });
+    const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+    });
 
-  return response.text.trim();
+    return response.text.trim();
 }
 
 export async function generateFeedback(
-  questions,
-  answers,
-  config
+    questions,
+    answers,
+    config
 ) {
 
-const prompt = `
+    const prompt = `
 You are a Senior Software Engineering Interviewer at Google.
 
 You are evaluating a REAL technical interview.
@@ -79,9 +79,9 @@ Skills: ${config.skills}
 
 Interview
 
-${questions.map((q,i)=>`
+${questions.map((q, i) => `
 
-Question ${i+1}
+Question ${i + 1}
 
 ${q}
 
@@ -114,17 +114,7 @@ deduct marks.
 - Confidence
 - Problem Solving
 
-5. Score must be realistic.
-
-0-40 = Poor
-
-41-60 = Beginner
-
-61-75 = Average
-
-76-90 = Good
-
-91-100 = Excellent
+5. The overall score must be realistic and between 0 and 100.
 
 6. For EACH question provide:
 
@@ -138,17 +128,20 @@ deduct marks.
 
 7. Generate an improvement roadmap.
 
-8. Recommend whether candidate is:
+8. Based on the overall score, assign exactly ONE readiness level:
 
-Strong Hire
+0-40 = Needs Improvement
+41-60 = Developing
+61-75 = Interview Ready
+76-90 = Strong
+91-100 = Excellent
 
-Hire
-
-Borderline
-
-Needs Improvement
-
-Reject
+The "recommendation" field must contain exactly one of:
+"Needs Improvement"
+"Developing"
+"Interview Ready"
+"Strong"
+"Excellent"
 
 9. Estimate placement readiness.
 
@@ -163,7 +156,7 @@ Return EXACTLY this format:
 {
   "score":75,
 
-  "recommendation":"Borderline",
+  "recommendation": "Interview Ready",
 
   "summary":"...",
 
@@ -295,35 +288,35 @@ Return EXACTLY this format:
 }
 `;
 
-try{
+    try {
 
-const response=await ai.models.generateContent({
+        const response = await ai.models.generateContent({
 
-model:"gemini-3.5-flash",
+            model: "gemini-3.5-flash",
 
-contents:prompt
+            contents: prompt
 
-});
+        });
 
-const raw = response.text.trim();
+        const raw = response.text.trim();
 
-console.log(raw);
+        console.log(raw);
 
-const json = raw.match(/\{[\s\S]*\}/);
-if(!json){
+        const json = raw.match(/\{[\s\S]*\}/);
+        if (!json) {
 
-throw new Error("Gemini returned invalid JSON");
+            throw new Error("Gemini returned invalid JSON");
 
-}
+        }
 
-return JSON.parse(json[0]);
+        return JSON.parse(json[0]);
 
-}catch(err){
+    } catch (err) {
 
-console.log(err);
+        console.log(err);
 
-throw err;
+        throw err;
 
-}
+    }
 
 }

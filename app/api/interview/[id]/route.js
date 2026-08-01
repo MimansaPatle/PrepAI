@@ -23,7 +23,10 @@ export async function GET(req, { params }) {
 
     console.log("Interview ID:", id);
 
-    const interview = await Interview.findById(id);
+  const interview = await Interview.findOne({
+  _id: id,
+  user: session.user.id,
+});
 
     console.log("Interview Found:", interview);
 

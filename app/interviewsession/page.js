@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import InterviewSession from "@/components/InterviewSession";
 import Footer from "@/components/Footer";
@@ -9,7 +10,15 @@ export default function InterviewPage() {
       <Navbar />
 
       <main className="flex-1">
-        <InterviewSession />
+        <Suspense
+          fallback={
+            <div className="min-h-[60vh] flex items-center justify-center text-zinc-400">
+              Loading interview...
+            </div>
+          }
+        >
+          <InterviewSession />
+        </Suspense>
       </main>
 
       <Footer />

@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 
 import connectDB from "@/lib/mongodb";
 import Interview from "@/models/Interview";
-import User from "@/models/User";
+
 
 
 export async function POST(req) {
@@ -34,22 +34,10 @@ export async function POST(req) {
       company,
     } = body;
 
-    const user = await User.findById(session.user.id);
 
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
 
     const existingInterview = await Interview.findOne({
-      user: user._id,
+      user: session.user.id,
       status: "started",
       completedAt: null,
     });
@@ -62,7 +50,7 @@ export async function POST(req) {
     }
 
     const interview = await Interview.create({
-      user: user._id,
+      user: session.user.id,
       role,
       experience,
       difficulty,

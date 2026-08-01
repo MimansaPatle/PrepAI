@@ -29,8 +29,26 @@ export async function POST(req) {
       answer,
     } = body;
 
-    const interview = await Interview.findById(interviewId);
-    if (interview.status === "completed") {
+   const interview = await Interview.findOne({
+  _id: interviewId,
+  user: session.user.id,
+});
+
+// Interview doesn't exist OR doesn't belong to this user
+if (!interview) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Interview not found",
+    },
+    {
+      status: 404,
+    }
+  );
+}
+
+// Don't allow answers after completion
+if (interview.status === "completed") {
   return NextResponse.json(
     {
       success: false,
@@ -41,18 +59,6 @@ export async function POST(req) {
     }
   );
 }
-
-    if (!interview) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Interview not found",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
 
     interview.questions.push({
       question,

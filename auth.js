@@ -23,7 +23,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Email and Password are required");
         }
 
-        const user = await User.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const user = await User.findOne({
+          email: normalizedEmail,
+        });
+
+        if (!email || !password) {
+          throw new Error("Email and Password are required");
+        }
+
+        
 
         if (!user) {
           throw new Error("User not found");
@@ -42,6 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          role: user.role,
         };
       },
     }),
@@ -55,13 +66,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
-      return token;            // this token will be used to create the session, and it will be available in the session callback.
+
+      return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;       // this session will be available in the client-side, and it will contain the user information along with the token id. session is cookie based, and it will be sent to the client-side, where it can be accessed using the useSession hook provided by NextAuth.
     },

@@ -94,6 +94,18 @@ export async function PUT(req) {
       }
     ).select("-password");
 
+    if (!updatedUser) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "User not found",
+    },
+    {
+      status: 404,
+    }
+  );
+}
+
     return NextResponse.json({
       success: true,
       user: updatedUser,

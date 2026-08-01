@@ -54,12 +54,35 @@ export default function Navbar() {
           History
         </button>
 
+        <button
+          onClick={() => router.push("/support")}
+          className={`text-sm transition ${pathname === "/support"
+            ? "text-violet-400 font-medium"
+            : "text-zinc-400 hover:text-white"
+            }`}
+        >
+          Support
+        </button>
+
+        {/* Show Admin button only for admin accounts */}
+        {session?.user?.role === "admin" && (
+          <button
+            onClick={() => router.push("/admin")}
+            className={`text-sm transition ${pathname.startsWith("/admin")
+                ? "text-violet-400 font-medium"
+                : "text-zinc-400 hover:text-white"
+              }`}
+          >
+            Admin
+          </button>
+        )}
+
         <div className="flex items-center gap-3 pl-4 border-l border-zinc-800">
           <button
             onClick={() => router.push("/profile")}
             className={`flex items-center gap-2 text-sm font-medium transition ${pathname === "/profile"
-                ? "text-violet-400"
-                : "text-zinc-300 hover:text-violet-400"
+              ? "text-violet-400"
+              : "text-zinc-300 hover:text-violet-400"
               }`}
           >
             <IoPersonCircleOutline className="text-lg" />

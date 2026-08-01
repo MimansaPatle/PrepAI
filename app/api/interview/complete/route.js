@@ -24,15 +24,12 @@ export async function POST(req) {
 
     const { interviewId } = await req.json();
 
-    const interview = await Interview.findById(interviewId);
-    if (interview.status === "completed") {
-      return NextResponse.json({
-        success: true,
-        interviewId: interview._id,
-        message: "Interview already completed",
-      });
-    }
+    const interview = await Interview.findOne({
+      _id: interviewId,
+      user: session.user.id,
+    });
 
+    // Interview doesn't exist OR doesn't belong to logged-in user
     if (!interview) {
       return NextResponse.json(
         {
@@ -44,9 +41,17 @@ export async function POST(req) {
         }
       );
     }
-    console.log("Generating feedback for:", interview._id);
-    console.log("Current status:", interview.status);
-    console.log("Questions:", interview.questions.length);
+
+    // Already completed
+    if (interview.status === "completed") {
+      return NextResponse.json({
+        success: true,
+        interviewId: interview._id,
+        message: "Interview already completed",
+      });
+    }
+
+
     // Generate AI feedback
     const feedback = await generateFeedback(
       interview.questions.map((q) => q.question),
