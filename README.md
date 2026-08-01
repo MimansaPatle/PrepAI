@@ -165,7 +165,7 @@ GitHub:
 https://github.com/MimansaPatle
 
 LinkedIn:
-(Add your LinkedIn URL)
+https://www.linkedin.com/in/mimansa-patle-b489a6309
 
 ---
 
