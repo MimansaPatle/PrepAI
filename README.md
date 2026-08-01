@@ -1,36 +1,172 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 PrepAI – AI Interview Preparation Platform
 
-## Getting Started
+PrepAI is an AI-powered interview preparation platform that helps students and job seekers practice technical interviews with personalized AI-generated questions and detailed feedback.
 
-First, run the development server:
+The application simulates real interview sessions, evaluates answers using AI, generates improvement suggestions, and provides a professional dashboard to track interview performance.
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication
+- User Signup & Login
+- Secure authentication using Auth.js (NextAuth)
+- Protected routes
+
+### 🤖 AI Interview Simulation
+- AI-generated interview questions
+- Supports multiple roles
+- Multiple difficulty levels
+- Company-specific interview preparation
+- Timer-based interview experience
+
+### 📊 AI Feedback
+- Overall interview score
+- Technical knowledge evaluation
+- Communication analysis
+- Confidence assessment
+- Problem-solving evaluation
+- Strengths & weaknesses
+- Question-wise feedback
+- Personalized learning roadmap
+- Placement readiness prediction
+
+### 📄 PDF Report
+- Generate downloadable interview reports
+- Professional report layout
+
+### 📈 Dashboard
+- Overall AI score
+- Total interviews completed
+- Favorite role
+- Recent interview history
+
+### 👤 Profile
+- Manage profile information
+- Experience level
+- Preferred role
+- Target company
+- Skills
+
+### 📚 Interview History
+- View all previous interviews
+- Review previous AI feedback
+- Access reports anytime
+
+### 🎨 Modern UI
+- Responsive design
+- Skeleton loading screens
+- Animated loading states
+- AI Assistant toast notifications
+- Dark theme interface
+
+---
+
+# 🛠 Tech Stack
+
+### Frontend
+- Next.js 16
+- React 19
+- Tailwind CSS
+
+### Backend
+- Next.js API Routes
+- MongoDB Atlas
+- Mongoose
+
+### Authentication
+- Auth.js (NextAuth)
+
+### AI
+- Google Gemini API
+
+### PDF Generation
+- React PDF
+
+---
+
+## 📷 Screenshots
+
+Coming soon...
+
+---
+
+# ⚙️ Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/MimansaPatle/PrepAI.git
+```
+
+Move into the project
+
+```bash
+cd PrepAI
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Create a `.env.local` file
+
+```env
+MONGODB_URI=YOUR_MONGODB_URI
+
+AUTH_SECRET=YOUR_SECRET
+
+GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
+
+NEXTAUTH_URL=http://localhost:3000
+```
+
+Run the project
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+# 📂 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+components/
+controllers/
+lib/
+models/
+services/
+public/
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+# 🚀 Future Improvements
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Admin Dashboard
+- Interview Analytics
+- AI Voice Interviews
+- Leaderboard
+- Email Reports
+- Interview Sharing
+- Multi-language Support
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+# 👩‍💻 Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Mimansa Patle**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GitHub:
+https://github.com/MimansaPatle
+
+LinkedIn:
+(Add your LinkedIn URL)
+
+---
+
+⭐ If you like this project, consider giving it a star!
