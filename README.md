@@ -105,7 +105,52 @@ The application simulates real interview sessions, evaluates answers using AI, g
 
 ## 📷 Screenshots
 
-Coming soon...
+#### Landing Page
+<img src="screenshot/1.landingpage.png" width="100%" />
+<img src="screenshot/2.landingpage.png" width="100%" />
+
+#### Register & Login
+<img src="screenshot/3.registerpage.png" width="100%" />
+<img src="screenshot/4.loginpage.png" width="100%" />
+
+#### Dashboard
+<img src="screenshot/5.dashboard.png" width="100%" />
+
+#### Interview Setup
+<img src="screenshot/6.interviewsetup.png" width="100%" />
+
+#### Loading Screen
+<img src="screenshot/7.loadingscreen.png" width="100%" />
+
+#### Interview Session
+<img src="screenshot/8.interviewsession.png" width="100%" />
+
+#### Feedback Report
+<img src="screenshot/9.feedback.png" width="100%" />
+<img src="screenshot/10.feedback.png" width="100%" />
+<img src="screenshot/11.feedback.png" width="100%" />
+
+#### Interview History
+<img src="screenshot/12.history.png" width="100%" />
+
+#### Support
+<img src="screenshot/13.support.png" width="100%" />
+
+#### Profile
+<img src="screenshot/14.profile.png" width="100%" />
+
+#### Admin Dashboard
+<img src="screenshot/15.admindashboard.png" width="100%" />
+<img src="screenshot/16.admindashboard.png" width="100%" />
+
+#### User Management
+<img src="screenshot/17.usermanagement.png" width="100%" />
+
+#### Interview Management
+<img src="screenshot/18.interviewmanagement.png" width="100%" />
+
+#### Support Tickets
+<img src="screenshot/19.supportticket.png" width="100%" />
 
 ---
 
