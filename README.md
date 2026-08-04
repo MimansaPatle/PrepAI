@@ -19,6 +19,8 @@ The application simulates real interview sessions, evaluates answers using AI, g
 - Multiple difficulty levels
 - Company-specific interview preparation
 - Timer-based interview experience
+- Autocomplete suggestions for skills & target company while configuring a session
+- Quick presets — one-tap launch into a pre-configured interview
 
 ### 📊 AI Feedback
 - Overall interview score
@@ -33,7 +35,8 @@ The application simulates real interview sessions, evaluates answers using AI, g
 
 ### 📄 PDF Report
 - Generate downloadable interview reports
-- Professional report layout
+- Professional report layout with score ring, competency breakdown, strengths/improvements and a personalized roadmap
+- Accurate recommendation badges, duration and skills sourced directly from interview data
 
 ### 📈 Dashboard
 - Overall AI score
@@ -58,18 +61,20 @@ The application simulates real interview sessions, evaluates answers using AI, g
 - Track request status
 
 ### 🛡️ Admin Panel
-- Admin analytics dashboard (users, interviews, activity stats)
-- User management (search, view, manage accounts)
+- Admin analytics dashboard with real computed metrics (weekly activity, top roles, completion rate, avg. session length)
+- User management (search, view, manage accounts, role-based access)
 - Interview oversight (search, view, review any user's interview)
 - Support ticket management (view & respond to user requests)
 - Separate admin layout & navigation
 
 ### 🎨 Modern UI
-- Responsive design
+- Complete dark violet UI redesign with a JetBrains Mono, terminal-inspired aesthetic
+- Fully responsive, fluid-width layouts across all pages
 - Skeleton loading screens
 - Animated loading states
 - AI Assistant toast notifications
-- Dark theme interface
+- Consistent SVG icon set (lucide-react) throughout the app
+- Role-based navigation (Admin link only visible to admin accounts)
 
 ---
 
@@ -78,7 +83,9 @@ The application simulates real interview sessions, evaluates answers using AI, g
 ### Frontend
 - Next.js 16
 - React 19
-- Tailwind CSS
+- Tailwind CSS v4
+- lucide-react (icon set)
+- JetBrains Mono (UI typeface)
 
 ### Backend
 - Next.js API Routes
@@ -167,23 +174,13 @@ public/
 
 ---
 
-# 👩‍💻 Devlopers
+# 👩‍💻 Developers
 
-**Mimansa Patle**
+| Name | Role | GitHub | LinkedIn |
+|---|---|---|---|
+| **Mimansa Patle** | Backend Developer | [MimansaPatle](https://github.com/MimansaPatle) | [mimansa-patle](https://www.linkedin.com/in/mimansa-patle-b489a6309) |
+| **Tirth Vaghela** | Frontend Developer | [Tirthvaghela](https://github.com/Tirthvaghela) | [tirthvaghela](https://www.linkedin.com/in/tirthvaghela) |
 
-GitHub:
-https://github.com/MimansaPatle
-
-LinkedIn:
-https://www.linkedin.com/in/mimansa-patle-b489a6309
-
-**Tirth Vaghela**
-
-GitHub:
-https://github.com/Tirthvaghela
-
-LinkedIn:
-https://www.linkedin.com/in/tirthvaghela
 ---
 
 ⭐ If you like this project, consider giving it a star!
