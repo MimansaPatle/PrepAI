@@ -69,7 +69,7 @@ The application simulates real interview sessions, evaluates answers using AI, g
 
 ### 🎨 Modern UI
 - Complete dark violet UI redesign with a JetBrains Mono, terminal-inspired aesthetic
-- Fully responsive, fluid-width layouts across all pages
+- Fully responsive UI — fluid-width layouts that adapt to every screen, from mobile to ultra-wide displays
 - Skeleton loading screens
 - Animated loading states
 - AI Assistant toast notifications
