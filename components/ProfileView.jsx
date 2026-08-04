@@ -204,12 +204,12 @@ export default function ProfileView() {
 
             <div className="mb-4">
               <div className={labelClass}>TARGET ORGANIZATION</div>
-              <AutocompleteInput value={targetCompany} onChange={setTargetCompany} suggestions={COMPANY_SUGGESTIONS} placeholder="type e.g. goo… → google" />
+              <AutocompleteInput value={targetCompany} onChange={setTargetCompany} suggestions={COMPANY_SUGGESTIONS} placeholder="type" />
             </div>
 
             <div className={labelClass}>CORE TECH STACK</div>
             <div className="mb-[22px]">
-              <SkillTagInput value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} placeholder="type e.g. rea… → react" />
+              <SkillTagInput value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} placeholder="type" />
             </div>
 
             <button
