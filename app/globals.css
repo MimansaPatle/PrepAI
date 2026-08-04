@@ -1,28 +1,83 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #08080c;
+  --foreground: #f2f2f5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jetbrains);
+  --font-mono: var(--font-jetbrains);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --color-purple: #8b5cf6;
+  --color-purple-light: #a78bfa;
+  --color-purple-lilac: #c4b5fd;
+  --color-panel: #0e0e14;
+  --color-field: #16161e;
+  --color-good: #34d399;
+  --color-bad: #f87171;
+
+  --animate-rise: rise .6s ease both;
+  --animate-floaty: floaty 4s ease-in-out infinite;
+  --animate-bob: bob 3s ease-in-out infinite;
+  --animate-glowpulse: glowpulse 2.6s ease-in-out infinite;
+  --animate-caret: caret 1s steps(1) infinite;
+  --animate-dotp: dotp 1.1s ease-in-out infinite;
 }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes glowpulse {
+  0%, 100% { opacity: .55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+@keyframes caret {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+@keyframes dotp {
+  0%, 100% { transform: translateY(0); opacity: .4; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+@keyframes loadfill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+html, body { margin: 0; padding: 0; background: #08080c; }
+* { box-sizing: border-box; }
+::selection { background: rgba(139, 92, 246, .4); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, .28); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+input::placeholder, textarea::placeholder { color: #4f4f5c; }
+select { -webkit-appearance: none; appearance: none; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* App background glows */
+.prepai-bg {
+  background:
+    radial-gradient(900px 520px at 82% -6%, rgba(124, 58, 237, .22), transparent 58%),
+    radial-gradient(760px 520px at 6% 108%, rgba(91, 155, 232, .12), transparent 55%),
+    #08080c;
 }
 
 @keyframes progressLoop {
@@ -67,7 +122,7 @@ body {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: #18181b;
+  background: #16161e;
 }
 
 .skeleton::after {

@@ -53,6 +53,17 @@ The application simulates real interview sessions, evaluates answers using AI, g
 - Review previous AI feedback
 - Access reports anytime
 
+### 🆘 Support
+- Users can raise support requests
+- Track request status
+
+### 🛡️ Admin Panel
+- Admin analytics dashboard (users, interviews, activity stats)
+- User management (search, view, manage accounts)
+- Interview oversight (search, view, review any user's interview)
+- Support ticket management (view & respond to user requests)
+- Separate admin layout & navigation
+
 ### 🎨 Modern UI
 - Responsive design
 - Skeleton loading screens
@@ -81,7 +92,7 @@ The application simulates real interview sessions, evaluates answers using AI, g
 - Google Gemini API
 
 ### PDF Generation
-- React PDF
+- jsPDF + html2canvas
 
 ---
 
@@ -118,9 +129,9 @@ MONGODB_URI=YOUR_MONGODB_URI
 
 AUTH_SECRET=YOUR_SECRET
 
-GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
+AUTH_URL=http://localhost:3000
 
-NEXTAUTH_URL=http://localhost:3000
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 ```
 
 Run the project
@@ -147,8 +158,7 @@ public/
 
 # 🚀 Future Improvements
 
-- Admin Dashboard
-- Interview Analytics
+- Advanced Interview Analytics
 - AI Voice Interviews
 - Leaderboard
 - Email Reports

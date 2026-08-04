@@ -1,62 +1,49 @@
 export default function HistorySkeleton() {
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 md:p-12 space-y-8">
+    <div className="space-y-6 animate-rise">
 
       {/* Header */}
       <div className="space-y-3">
-        <div className="h-10 w-72 skeleton rounded-lg"></div>
-        <div className="h-4 w-96 skeleton rounded"></div>
+        <div className="h-9 w-64 skeleton rounded-lg"></div>
+        <div className="h-4 w-80 skeleton rounded"></div>
       </div>
 
-      {/* Interview Cards */}
-      <div className="space-y-4">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-2xl border border-white/[.07] bg-panel p-[18px] space-y-3">
+            <div className="h-3 w-20 skeleton rounded"></div>
+            <div className="h-6 w-14 skeleton rounded"></div>
+          </div>
+        ))}
+      </div>
 
+      {/* Session rows */}
+      <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="bg-zinc-900/40 border border-zinc-800 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            className="bg-panel border border-white/[.07] p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
-
-            {/* Left */}
             <div className="flex items-start gap-4">
-
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-xl skeleton"></div>
-
+              <div className="w-10 h-10 rounded-[11px] skeleton"></div>
               <div className="space-y-3">
-
                 <div className="flex items-center gap-2">
-
-                  <div className="h-6 w-48 skeleton rounded"></div>
-
-                  <div className="h-5 w-16 skeleton rounded-full"></div>
-
+                  <div className="h-5 w-40 skeleton rounded"></div>
+                  <div className="h-4 w-14 skeleton rounded-full"></div>
                 </div>
-
-                <div className="h-4 w-56 skeleton rounded"></div>
-
+                <div className="h-3 w-48 skeleton rounded"></div>
               </div>
-
             </div>
-
-            {/* Right */}
-            <div className="flex items-center gap-6">
-
+            <div className="flex items-center gap-4">
               <div className="text-right space-y-2">
-
-                <div className="h-3 w-20 skeleton rounded ml-auto"></div>
-
-                <div className="h-7 w-14 skeleton rounded ml-auto"></div>
-
+                <div className="h-2.5 w-16 skeleton rounded ml-auto"></div>
+                <div className="h-5 w-12 skeleton rounded ml-auto"></div>
               </div>
-
-              <div className="w-32 h-10 rounded-xl skeleton"></div>
-
+              <div className="w-24 h-9 rounded-[10px] skeleton"></div>
             </div>
-
           </div>
         ))}
-
       </div>
 
     </div>

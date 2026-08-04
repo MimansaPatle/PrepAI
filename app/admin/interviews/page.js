@@ -2,12 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-    IoDocumentTextOutline,
-    IoSearchOutline,
-    IoPersonCircleOutline,
-    IoRefreshOutline,
-} from "react-icons/io5";
+import { Card, fieldClass } from "@/components/ui/Brand";
 
 export default function AdminInterviewsPage() {
     const router = useRouter();
@@ -19,12 +14,8 @@ export default function AdminInterviewsPage() {
     const loadInterviews = async () => {
         try {
             const res = await fetch("/api/admin/interviews");
-
             const data = await res.json();
-
-            if (data.success) {
-                setInterviews(data.interviews);
-            }
+            if (data.success) setInterviews(data.interviews);
         } catch (error) {
             console.error("Failed to load interviews:", error);
         } finally {
@@ -38,15 +29,12 @@ export default function AdminInterviewsPage() {
 
     const handleRefresh = async () => {
         setRefreshing(true);
-
         await loadInterviews();
-
         setRefreshing(false);
     };
 
     const filteredInterviews = interviews.filter((interview) => {
         const value = search.toLowerCase();
-
         return (
             interview.user?.name?.toLowerCase().includes(value) ||
             interview.user?.email?.toLowerCase().includes(value) ||
@@ -57,194 +45,106 @@ export default function AdminInterviewsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-50 p-6 md:p-12 space-y-8">
+        <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 pt-[34px] pb-14 animate-rise">
 
-            {/* Header */}
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-900 pb-6 gap-4">
-
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-[22px]">
                 <div>
-                    <div className="flex items-center gap-2 text-xs font-mono text-violet-400 uppercase tracking-widest mb-1">
-                        <IoDocumentTextOutline />
-                        Interview Management
-                    </div>
-
-                    <h1 className="text-3xl font-extrabold tracking-tight">
-                        PrepAI Interviews
-                    </h1>
-
-                    <p className="text-zinc-400 text-sm mt-1">
-                        Monitor interview sessions and AI evaluation results.
-                    </p>
+                    <h1 className="font-extrabold text-[24px] sm:text-[26px] tracking-[-.8px]">Interview management</h1>
+                    <p className="text-[#8a8a97] text-[12.5px] mt-1">Monitor interview sessions and AI evaluation results.</p>
                 </div>
-
                 <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-sm transition"
+                    className="inline-flex items-center gap-2 border-0 text-white px-4 py-2.5 rounded-xl text-[12.5px] font-semibold disabled:opacity-60 self-start"
+                    style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
                 >
-                    <IoRefreshOutline
-                        className={refreshing ? "animate-spin" : ""}
-                    />
-
-                    {refreshing ? "Syncing..." : "Refresh"}
+                    {refreshing ? "syncing…" : "refresh"}
                 </button>
+            </div>
 
-            </header>
-
-            {/* Search + Count */}
-            <section className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-
-                <div className="relative w-full sm:max-w-md">
-
-                    <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-
-                    <input
-                        type="text"
-                        placeholder="Search candidate, role, difficulty..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 transition"
-                    />
-
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-5">
+                <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search candidate, role, difficulty…"
+                    className={`${fieldClass} sm:max-w-md`}
+                />
+                <div className="text-[12.5px] text-[#7a7a87]">
+                    Total interviews: <span className="text-[#e6e6ec] font-semibold ml-1">{interviews.length}</span>
                 </div>
+            </div>
 
-                <div className="text-sm text-zinc-500">
-                    Total Interviews:
-                    <span className="text-zinc-200 font-semibold ml-2">
-                        {interviews.length}
-                    </span>
-                </div>
-
-            </section>
-
-            {/* Table */}
-            <section className="bg-zinc-900/20 border border-zinc-800/60 rounded-2xl overflow-hidden">
-
+            <Card className="overflow-hidden">
                 {loading ? (
-                    <div className="p-12 text-center text-zinc-500">
-                        Loading interviews...
-                    </div>
+                    <div className="p-12 text-center text-[#7a7a87] text-[13px]">Loading interviews…</div>
                 ) : filteredInterviews.length === 0 ? (
-                    <div className="p-12 text-center text-zinc-500">
-                        No interviews found.
-                    </div>
+                    <div className="p-12 text-center text-[#7a7a87] text-[13px]">No interviews found.</div>
                 ) : (
                     <div className="overflow-x-auto">
-
-                        <table className="w-full text-left">
-
+                        <table className="w-full text-left min-w-[820px]">
                             <thead>
-                                <tr className="border-b border-zinc-900 text-zinc-500 text-xs uppercase tracking-wider bg-zinc-950/40">
-
-                                    <th className="py-4 px-6">Candidate</th>
-                                    <th className="py-4 px-6">Role</th>
-                                    <th className="py-4 px-6">Difficulty</th>
-                                    <th className="py-4 px-6">Status</th>
-                                    <th className="py-4 px-6 text-right">Score</th>
-                                    <th className="py-4 px-6 text-right">Date</th>
-                                    <th className="py-4 px-6 text-right">Action</th>
-
+                                <tr className="border-b border-white/[.07] text-[#7a7a87] text-[10px] uppercase tracking-[.5px] bg-field/60">
+                                    <th className="py-3.5 px-5 sm:px-6">Candidate</th>
+                                    <th className="py-3.5 px-5 sm:px-6">Role</th>
+                                    <th className="py-3.5 px-5 sm:px-6">Difficulty</th>
+                                    <th className="py-3.5 px-5 sm:px-6">Status</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">Score</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">Date</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">Action</th>
                                 </tr>
                             </thead>
-
-                            <tbody className="divide-y divide-zinc-900/60">
-
+                            <tbody className="divide-y divide-white/[.05] text-[13px] text-[#c4c4cf]">
                                 {filteredInterviews.map((interview) => (
-                                    <tr
-                                        key={interview.id}
-                                        className="hover:bg-zinc-900/30 transition"
-                                    >
-
-                                        {/* Candidate */}
-                                        <td className="py-4 px-6">
+                                    <tr key={interview.id}>
+                                        <td className="py-3.5 px-5 sm:px-6">
                                             <div className="flex items-center gap-3">
-
-                                                <IoPersonCircleOutline className="text-3xl text-zinc-600" />
-
+                                                <span className="w-7 h-7 rounded-[9px] flex-none" style={{ background: "linear-gradient(135deg,#8b5cf6,#5b9be8)" }} />
                                                 <div>
-                                                    <p className="text-sm font-medium text-zinc-200">
-                                                        {interview.user?.name}
-                                                    </p>
-
-                                                    <p className="text-[11px] text-zinc-500">
-                                                        {interview.user?.email}
-                                                    </p>
+                                                    <div className="font-medium text-[#e6e6ec]">{interview.user?.name}</div>
+                                                    <div className="text-[10.5px] text-[#6f6f7c]">{interview.user?.email}</div>
                                                 </div>
-
                                             </div>
                                         </td>
-
-                                        {/* Role */}
-                                        <td className="py-4 px-6 text-sm text-zinc-400">
-                                            {interview.role || "—"}
+                                        <td className="py-3.5 px-5 sm:px-6 text-[12px]">{interview.role || "—"}</td>
+                                        <td className="py-3.5 px-5 sm:px-6">
+                                            <span className="text-[10.5px] px-2.5 py-1 rounded-full bg-field text-[#9090a0] uppercase tracking-[.4px]">{interview.difficulty || "—"}</span>
                                         </td>
-
-                                        {/* Difficulty */}
-                                        <td className="py-4 px-6">
-                                            <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300">
-                                                {interview.difficulty || "—"}
-                                            </span>
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="py-4 px-6">
-
+                                        <td className="py-3.5 px-5 sm:px-6">
                                             <span
-                                                className={`text-xs px-2.5 py-1 rounded-full border ${interview.status === "completed"
-                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                                    : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                                    }`}
+                                                className="text-[10.5px] px-2.5 py-1 rounded-full border"
+                                                style={
+                                                    interview.status === "completed"
+                                                        ? { background: "rgba(52,211,153,.1)", color: "#34d399", borderColor: "rgba(52,211,153,.2)" }
+                                                        : { background: "rgba(139,92,246,.12)", color: "#c4b5fd", borderColor: "rgba(139,92,246,.24)" }
+                                                }
                                             >
                                                 {interview.status}
                                             </span>
-
                                         </td>
-
-                                        {/* Score */}
-                                        <td className="py-4 px-6 text-right font-mono font-semibold">
-                                            {interview.score !== null
-                                                ? `${interview.score}%`
-                                                : "—"}
+                                        <td className="py-3.5 px-5 sm:px-6 text-right font-semibold text-purple-light">
+                                            {interview.score !== null ? `${interview.score}%` : "—"}
                                         </td>
-
-                                        {/* Date */}
-                                        <td className="py-4 px-6 text-right text-xs text-zinc-500">
+                                        <td className="py-3.5 px-5 sm:px-6 text-right text-[11px] text-[#6f6f7c]">
                                             {interview.createdAt
-                                                ? new Date(interview.createdAt).toLocaleDateString(
-                                                    "en-IN",
-                                                    {
-                                                        day: "2-digit",
-                                                        month: "short",
-                                                        year: "numeric",
-                                                    }
-                                                )
+                                                ? new Date(interview.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
                                                 : "—"}
                                         </td>
-
-                                        {/* Action */}
-                                        <td className="py-4 px-6 text-right">
+                                        <td className="py-3.5 px-5 sm:px-6 text-right">
                                             <button
-                                                onClick={() =>
-                                                    router.push(`/admin/interviews/${interview.id}`)
-                                                }
-                                                className="text-xs font-medium text-violet-400 hover:text-violet-300 bg-violet-500/10 hover:bg-violet-500/15 border border-violet-500/20 px-3 py-1.5 rounded-lg transition"
+                                                onClick={() => router.push(`/admin/interviews/${interview.id}`)}
+                                                className="text-[11.5px] font-medium text-purple-light px-3 py-1.5 rounded-lg border border-purple/25"
+                                                style={{ background: "rgba(139,92,246,.1)" }}
                                             >
                                                 View →
                                             </button>
                                         </td>
-
                                     </tr>
                                 ))}
-
                             </tbody>
-
                         </table>
-
                     </div>
                 )}
-
-            </section>
-
+            </Card>
         </div>
     );
 }

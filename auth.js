@@ -20,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { email, password } = credentials;
 
         if (!email || !password) {
-          throw new Error("Email and Password are required");
+          return null;
         }
 
         const normalizedEmail = email.trim().toLowerCase();
@@ -29,14 +29,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: normalizedEmail,
         });
 
-        if (!email || !password) {
-          throw new Error("Email and Password are required");
-        }
-
-        
-
         if (!user) {
-          throw new Error("User not found");
+          return null;
         }
 
         const isPasswordCorrect = await bcrypt.compare(
@@ -45,7 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isPasswordCorrect) {
-          throw new Error("Invalid password");
+          return null;
         }
 
         return {

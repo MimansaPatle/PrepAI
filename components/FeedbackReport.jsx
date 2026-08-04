@@ -1,19 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  IoCheckmarkCircle,
-  IoCloseCircle,
-  IoCalendarOutline,
-  IoChatbubbleEllipsesOutline,
-  IoCodeSlashOutline,
-  IoPersonOutline,
-  IoBulbOutline,
-} from "react-icons/io5";
 import CountUp from "react-countup";
 import { useRouter } from "next/navigation";
-// import { generateInterviewPDF } from "@/lib/generatePDF";
+import { Download, CheckCircle2, TrendingUp, ChevronRight, Plus } from "lucide-react";
 import { generateInterviewPDF } from "@/lib/generateInterviewPDF";
+import { Robot, Card } from "@/components/ui/Brand";
 
 export default function FeedbackReport() {
   const [answers, setAnswers] = useState([]);
@@ -37,12 +29,9 @@ export default function FeedbackReport() {
         }
 
         const interview = data.interview;
-
         setInterview(interview);
         setAnswers(interview.questions);
         setFeedback(interview.feedback);
-
-
       } catch (err) {
         console.error(err);
       } finally {
@@ -53,708 +42,187 @@ export default function FeedbackReport() {
     loadFeedback();
   }, []);
 
-
-  const metrics = [
-    {
-      metric: "Communication",
-      score: feedback?.metrics?.communication?.score ?? 0,
-      reason: feedback?.metrics?.communication?.reason ?? "",
-      icon: <IoChatbubbleEllipsesOutline size={22} />,
-    },
-    {
-      metric: "Technical Knowledge",
-      score: feedback?.metrics?.technicalKnowledge?.score ?? 0,
-      reason: feedback?.metrics?.technicalKnowledge?.reason ?? "",
-      icon: <IoCodeSlashOutline size={22} />,
-    },
-    {
-      metric: "Confidence",
-      score: feedback?.metrics?.confidence?.score ?? 0,
-      reason: feedback?.metrics?.confidence?.reason ?? "",
-      icon: <IoPersonOutline size={22} />,
-    },
-    {
-      metric: "Problem Solving",
-      score: feedback?.metrics?.problemSolving?.score ?? 0,
-      reason: feedback?.metrics?.problemSolving?.reason ?? "",
-      icon: <IoBulbOutline size={22} />,
-    },
-  ];
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white">
-        Generating AI Feedback...
+      <div className="min-h-[58vh] flex flex-col items-center justify-center text-center animate-rise">
+        <Robot v="a" className="w-[110px] h-auto animate-bob mb-6" />
+        <p className="text-[#8a8a97] text-[13px] tracking-[.3px]">generating ai feedback…</p>
       </div>
     );
   }
+
   if (!feedback || feedback.score == null) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-400">
+      <div className="min-h-[40vh] flex items-center justify-center text-bad text-[13px]">
         Feedback not available.
       </div>
     );
   }
+
+  const scoreColor = feedback.score >= 80 ? "#34d399" : feedback.score >= 60 ? "#a78bfa" : "#f87171";
+  const circleDeg = Math.max(0, Math.min(360, (feedback.score / 100) * 360));
+
+  const metrics = [
+    { label: "Communication", score: feedback?.metrics?.communication?.score ?? 0, reason: feedback?.metrics?.communication?.reason ?? "", color: "#5b9be8" },
+    { label: "Technical knowledge", score: feedback?.metrics?.technicalKnowledge?.score ?? 0, reason: feedback?.metrics?.technicalKnowledge?.reason ?? "", color: "#8b5cf6" },
+    { label: "Confidence", score: feedback?.metrics?.confidence?.score ?? 0, reason: feedback?.metrics?.confidence?.reason ?? "", color: "#a78bfa" },
+    { label: "Problem solving", score: feedback?.metrics?.problemSolving?.score ?? 0, reason: feedback?.metrics?.problemSolving?.reason ?? "", color: "#34d399" },
+  ];
+
   return (
+    <div className="animate-rise">
+      <div className="flex items-center justify-between mb-[22px] gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Robot v="a" className="w-14 h-auto animate-bob" />
+          <div>
+            <h1 className="font-extrabold text-[24px] sm:text-[26px] mb-[5px] tracking-[-.8px]">Interview report</h1>
+            <p className="text-[#8a8a97] text-[12.5px]">{interview?.role} / {(interview?.difficulty || "").toLowerCase()} / completed {interview?.completedAt ? new Date(interview.completedAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) : "—"}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => generateInterviewPDF(interview)}
+          className="inline-flex items-center gap-2 border-0 text-white px-5 py-[11px] rounded-[11px] text-[13px] font-semibold"
+          style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
+        >
+          <Download className="w-3.5 h-3.5" /> Download PDF
+        </button>
+      </div>
 
-    <div className="bg-zinc-950 text-zinc-50 min-h-screen p-6 md:p-12">
-      <div className="max-w-5xl mx-auto space-y-8">
-
-        {/* ================= HEADER ================= */}
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-
-          <div className="flex flex-col lg:flex-row justify-between gap-10">
-
-            {/* Left */}
-
-            <div className="space-y-4">
-
-              <span className="text-xs uppercase tracking-[0.3em] text-violet-400 font-semibold">
-                AI Interview Report
+      <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-[18px] mb-[18px]">
+        <Card className="p-[26px] text-center">
+          <div className="text-[10px] text-[#7a7a87] tracking-[.6px] mb-4">OVERALL PERFORMANCE</div>
+          <div className="w-[148px] h-[148px] mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(${scoreColor} 0deg ${circleDeg}deg,#16161e ${circleDeg}deg)` }}>
+            <div className="w-[114px] h-[114px] rounded-full bg-panel flex flex-col items-center justify-center">
+              <span className="font-extrabold text-[36px]" style={{ color: scoreColor }}>
+                <CountUp end={feedback.score} duration={1.4} suffix="%" />
               </span>
-
-              <h1 className="text-4xl font-bold">
-                {interview?.role}
-              </h1>
-
-              <p className="text-zinc-400">
-                Personalized feedback generated after evaluating your interview responses.
-              </p>
-
-              <div className="grid grid-cols-2 gap-5 pt-6">
-
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">
-                    Difficulty
-                  </p>
-
-                  <p className="font-semibold">
-                    {interview?.difficulty}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">
-                    Experience
-                  </p>
-
-                  <p className="font-semibold">
-                    {interview?.experience}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">
-                    Questions
-                  </p>
-
-                  <p className="font-semibold">
-                    {answers.length}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase">
-                    Company
-                  </p>
-
-                  <p className="font-semibold">
-                    {interview?.company || "General"}
-                  </p>
-                </div>
-
-              </div>
-
+              <span className="text-[10px] text-[#7a7a87]">readiness</span>
             </div>
-
-            {/* Right */}
-
-            <div className="flex flex-col items-center justify-center">
-
-              <div className="w-44 h-44 rounded-full border-[10px] border-emerald-500 flex items-center justify-center">
-
-                <div className="text-center">
-
-                  <h2 className="text-5xl font-black text-emerald-400">
-                    <CountUp
-                      end={feedback.score}
-                      duration={2}
-                      suffix="%"
-                    />
-                  </h2>
-
-                  <p className="text-sm text-zinc-400 mt-2">
-                    Overall Score
-                  </p>
-
-                </div>
-
-              </div>
-
-              <div className="mt-6">
-
-                {feedback.score >= 80 && (
-                  <span className="bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-full text-sm">
-                    Excellent Performance
-                  </span>
-                )}
-
-                {feedback.score >= 60 && feedback.score < 80 && (
-                  <span className="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full text-sm">
-                    Good Performance
-                  </span>
-                )}
-
-                {feedback.score < 60 && (
-                  <span className="bg-red-500/20 text-red-400 px-4 py-2 rounded-full text-sm">
-                    Needs Improvement
-                  </span>
-                )}
-
-              </div>
-
-            </div>
-
           </div>
+          <div className="text-[13px] font-semibold mb-1.5" style={{ color: scoreColor }}>{feedback.recommendation || "—"}</div>
+          <div className="text-[11.5px] text-[#8a8a97] leading-[1.5]">{feedback.summary}</div>
+        </Card>
 
+        <Card className="p-[22px] sm:p-[26px]">
+          <div className="font-semibold text-[15px] mb-5">Competency breakdown</div>
+          {metrics.map((c) => {
+            const pct = Math.max(0, Math.min(100, (c.score / 5) * 100));
+            return (
+              <div key={c.label} className="mb-[17px]">
+                <div className="flex justify-between text-[13px] mb-2">
+                  <span className="text-[#c4c4cf]">{c.label}</span>
+                  <span className="font-extrabold" style={{ color: c.color }}>{c.score}/5</span>
+                </div>
+                <div className="h-2 bg-field rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: c.color }} />
+                </div>
+                {c.reason && <div className="text-[11px] text-[#6f6f7c] mt-1.5 leading-[1.5]">{c.reason}</div>}
+              </div>
+            );
+          })}
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[18px] mb-[18px]">
+        <div className="p-[22px] bg-panel border border-good/20 rounded-[18px]">
+          <div className="flex items-center gap-1.5 font-semibold text-[14px] text-good mb-3.5"><CheckCircle2 className="w-4 h-4" /> strengths</div>
+          {feedback?.strengths?.length ? feedback.strengths.map((s, i) => (
+            <div key={i} className="flex gap-[11px] py-[7px] text-[12.5px] leading-[1.5] text-[#c4c4cf]"><Plus className="w-3.5 h-3.5 text-good flex-none mt-0.5" />{s}</div>
+          )) : <div className="text-[12px] text-[#6f6f7c]">AI did not identify any strengths.</div>}
         </div>
+        <div className="p-[22px] bg-panel border border-purple/20 rounded-[18px]">
+          <div className="flex items-center gap-1.5 font-semibold text-[14px] text-purple-light mb-3.5"><TrendingUp className="w-4 h-4" /> areas to improve</div>
+          {feedback?.weaknesses?.length ? feedback.weaknesses.map((w, i) => (
+            <div key={i} className="flex gap-[11px] py-[7px] text-[12.5px] leading-[1.5] text-[#c4c4cf]"><ChevronRight className="w-3.5 h-3.5 text-purple-light flex-none mt-0.5" />{w}</div>
+          )) : <div className="text-[12px] text-[#6f6f7c]">AI did not identify any weaknesses.</div>}
+        </div>
+      </div>
 
-        {/* ================= PERFORMANCE METRICS ================= */}
+      {feedback?.roadmap?.length > 0 && (
+        <Card className="p-[22px] sm:p-[24px] mb-[18px]">
+          <div className="font-semibold text-[15px] mb-5">// your 2-week roadmap</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {feedback.roadmap.map((r, i) => (
+              <div key={i} className="p-[17px] bg-field rounded-[14px]">
+                <div className="w-7 h-7 rounded-[9px] flex items-center justify-center font-extrabold text-[13px] text-purple-light mb-3" style={{ background: "rgba(139,92,246,.16)" }}>{i + 1}</div>
+                <div className="text-[10.5px] uppercase tracking-[.4px] text-purple-lilac mb-1">{r.day}</div>
+                <div className="text-[13px] font-semibold mb-1.5">{r.topic}</div>
+                <div className="text-[11.5px] text-[#8a8a97] leading-[1.5]">{r.goal}</div>
+                {r.resource && <a href={r.resource} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[11px] text-purple-light">open resource →</a>}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
-        <div>
-
-          <h2 className="text-2xl font-bold mb-6">
-            Performance Metrics
-          </h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-
-            {metrics.map((item, index) => {
-
-              const percentage = (item.score / 5) * 100;
-
-              let color = "bg-red-500";
-
-              let label = "Needs Improvement";
-
-              if (item.score >= 4) {
-                color = "bg-emerald-500";
-                label = "Excellent";
-              }
-              else if (item.score >= 3) {
-                color = "bg-yellow-500";
-                label = "Good";
-              }
-
+      <div className="mb-[22px]">
+        <div className="text-[11px] text-purple tracking-[.8px] uppercase mb-[14px]">// interview analysis</div>
+        {answers.length === 0 ? (
+          <Card className="p-6 text-center text-[#7a7a87] text-[13px]">No interview questions found.</Card>
+        ) : (
+          <div className="space-y-3.5">
+            {answers.map((item, index) => {
+              const qf = feedback?.questionFeedback?.[index];
+              const qColor = qf?.score >= 8 ? "#34d399" : qf?.score >= 5 ? "#a78bfa" : "#f87171";
               return (
-
-                <div
-                  key={index}
-                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-
-                  <div className="flex justify-between items-center mb-5">
-
-                    <div className="p-3 rounded-xl bg-zinc-800">
-                      {item.icon}
-                    </div>
-
-                    <span className="text-3xl font-bold">
-                      {item.score}
-                      <span className="text-lg text-zinc-500">/5</span>
+                <Card key={index} className="overflow-hidden">
+                  <div className="flex justify-between items-center px-5 sm:px-6 py-4 border-b border-white/[.07] bg-field">
+                    <span className="text-[10.5px] uppercase tracking-[.5px] text-purple-lilac">question {index + 1}</span>
+                    <span className="text-[11px] px-2.5 py-1 rounded-full font-medium" style={{ background: `${qColor}22`, color: qColor }}>
+                      {qf ? `${qf.score}/10` : "Not evaluated"}
                     </span>
-
                   </div>
-
-                  <h3 className="font-semibold mb-3">
-                    {item.metric}
-                  </h3>
-
-                  <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
-
-                    <div
-                      className={`h-full ${color} transition-all duration-1000`}
-                      style={{
-                        width: `${percentage}%`
-                      }}
-                    />
-
+                  <div className="p-5 sm:p-6">
+                    <div className="text-[10px] uppercase tracking-[.5px] text-[#7a7a87] mb-2">interview question</div>
+                    <p className="text-[14px] font-medium leading-[1.6] text-[#e6e6ec]">{item.question}</p>
                   </div>
+                  <div className="px-5 sm:px-6 pb-6">
+                    <div className="bg-field rounded-xl border border-white/[.06] p-4 sm:p-5">
+                      <div className="text-[10px] uppercase tracking-[.5px] text-good mb-2.5">your answer</div>
+                      <p className="text-[#c4c4cf] text-[13px] whitespace-pre-wrap leading-[1.7]">{item.answer || "No answer submitted."}</p>
 
-                  <p className="text-sm text-zinc-400 mt-3">
-                    {label}
-                  </p>
-
-                  <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
-                    {item.reason}
-                  </p>
-
-                </div>
-
+                      {qf && (
+                        <div className="mt-5 space-y-4">
+                          {qf.strengths?.length > 0 && (
+                            <div>
+                              <div className="text-good font-semibold text-[12px] mb-1.5">AI strengths</div>
+                              <ul className="space-y-1">
+                                {qf.strengths.map((p, i) => <li key={i} className="text-[12px] text-[#c4c4cf]">• {p}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                          {qf.weaknesses?.length > 0 && (
+                            <div>
+                              <div className="text-bad font-semibold text-[12px] mb-1.5">AI weaknesses</div>
+                              <ul className="space-y-1">
+                                {qf.weaknesses.map((p, i) => <li key={i} className="text-[12px] text-[#c4c4cf]">• {p}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                          {qf.idealAnswer && (
+                            <div>
+                              <div className="text-purple-light font-semibold text-[12px] mb-1.5">Ideal answer</div>
+                              <div className="bg-panel border border-white/[.06] rounded-xl p-3.5 text-[12px] text-[#c4c4cf] leading-[1.7]">{qf.idealAnswer}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
               );
-
             })}
-
           </div>
-
-        </div>
-
-        {/* ================= STRENGTHS & WEAKNESSES ================= */}
-
-        <div className="grid lg:grid-cols-2 gap-6">
-
-          {/* Strengths */}
-
-          <div className="bg-zinc-900 border border-emerald-900/40 rounded-3xl p-6">
-
-            <div className="flex items-center gap-3 mb-6">
-
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-
-                <IoCheckmarkCircle className="text-emerald-400 text-2xl" />
-
-              </div>
-
-              <div>
-
-                <h2 className="text-xl font-bold">
-                  Strengths
-                </h2>
-
-                <p className="text-sm text-zinc-500">
-                  Things you performed well.
-                </p>
-
-              </div>
-
-            </div>
-
-            {
-              feedback?.strengths?.length ?
-
-                <div className="space-y-4">
-
-                  {feedback.strengths.map((item, index) => (
-
-                    <div
-                      key={index}
-                      className="flex items-start gap-4 bg-zinc-950 rounded-xl p-4 border border-zinc-800">
-
-                      <div className="mt-1">
-
-                        <IoCheckmarkCircle
-                          className="text-emerald-400 text-lg" />
-
-                      </div>
-
-                      <p className="text-zinc-300 leading-relaxed">
-                        {item}
-                      </p>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-                :
-
-                <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-6 text-center text-zinc-500">
-
-                  AI did not identify any strengths.
-
-                </div>
-
-            }
-
-          </div>
-
-          {/* Weaknesses */}
-
-          <div className="bg-zinc-900 border border-red-900/40 rounded-3xl p-6">
-
-            <div className="flex items-center gap-3 mb-6">
-
-              <div className="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center">
-
-                <IoCloseCircle className="text-red-400 text-2xl" />
-
-              </div>
-
-              <div>
-
-                <h2 className="text-xl font-bold">
-                  Areas to Improve
-                </h2>
-
-                <p className="text-sm text-zinc-500">
-                  Focus on these topics.
-                </p>
-
-              </div>
-
-            </div>
-
-            {
-              feedback?.weaknesses?.length ?
-
-                <div className="space-y-4">
-
-                  {feedback.weaknesses.map((item, index) => (
-
-                    <div
-                      key={index}
-                      className="flex items-start gap-4 bg-zinc-950 rounded-xl p-4 border border-zinc-800">
-
-                      <div className="mt-1">
-
-                        <IoCloseCircle
-                          className="text-red-400 text-lg" />
-
-                      </div>
-
-                      <p className="text-zinc-300 leading-relaxed">
-                        {item}
-                      </p>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-                :
-
-                <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-6 text-center text-zinc-500">
-
-                  AI did not identify any weaknesses.
-
-                </div>
-
-            }
-
-          </div>
-
-        </div>
-
-        {/* ================= LEARNING ROADMAP ================= */}
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-
-          <div className="mb-8">
-
-            <h2 className="text-2xl font-bold">
-              Personalized Learning Roadmap
-            </h2>
-
-            <p className="text-zinc-500 mt-2">
-              Based on your interview performance, these are the topics you should focus on next.
-            </p>
-
-          </div>
-
-          {
-            feedback?.roadmap?.length ?
-
-              <div className="relative">
-
-                {/* Vertical Line */}
-
-                <div className="absolute left-5 top-2 bottom-2 w-[2px] bg-zinc-700"></div>
-
-                <div className="space-y-8">
-
-                  {
-                    feedback.roadmap.map((plan, index) => (
-
-                      <div
-                        key={index}
-                        className="relative flex gap-6">
-
-                        {/* Timeline Dot */}
-
-                        <div className="z-10">
-
-                          <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center font-bold text-sm">
-
-                            {index + 1}
-
-                          </div>
-
-                        </div>
-
-                        {/* Card */}
-
-                        <div className="flex-1 bg-zinc-950 border border-zinc-800 rounded-2xl p-5">
-
-                          <div className="flex justify-between items-center">
-
-                            <span className="text-xs uppercase tracking-widest text-violet-400">
-
-                              {plan.day}
-
-                            </span>
-
-                          </div>
-
-                          <h3 className="mt-3 text-lg font-semibold">
-
-                            {plan.topic}
-
-                          </h3>
-
-                        </div>
-
-                      </div>
-
-                    ))
-                  }
-
-                </div>
-
-              </div>
-
-              :
-
-              <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-
-                AI did not generate a learning roadmap.
-
-              </div>
-
-          }
-
-        </div>
-        {/* ================= INTERVIEW ANALYSIS ================= */}
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-
-          <div className="mb-8">
-
-            <h2 className="text-2xl font-bold">
-              Interview Analysis
-            </h2>
-
-            <p className="text-zinc-500 mt-2">
-              Review each interview question along with your submitted response.
-            </p>
-
-          </div>
-
-          {
-            answers.length === 0 ?
-
-              <div className="text-center py-10 text-zinc-500">
-
-                No interview questions found.
-
-              </div>
-
-              :
-
-              <div className="space-y-6">
-
-                {
-                  answers.map((item, index) => {
-
-                    const questionFeedback = feedback?.questionFeedback?.[index];
-
-                    return (
-
-                      <div
-                        key={index}
-                        className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
-
-                        {/* Header */}
-
-                        <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-
-                          <div>
-
-                            <span className="text-xs uppercase tracking-widest text-violet-400">
-
-                              Question {index + 1}
-
-                            </span>
-
-                          </div>
-
-                          {/* Future Score */}
-
-                          <div>
-
-                            <span
-                              className={`text-sm px-3 py-1 rounded-full font-medium ${questionFeedback?.score >= 8
-                                ? "bg-emerald-500/20 text-emerald-400"
-                                : questionFeedback?.score >= 5
-                                  ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-red-500/20 text-red-400"
-                                }`}
-                            >
-                              {questionFeedback
-                                ? `${questionFeedback.score}/10`
-                                : "Not Evaluated"}
-                            </span>
-
-                          </div>
-
-                        </div>
-
-                        {/* Question */}
-
-                        <div className="p-6">
-
-                          <h3 className="text-sm uppercase tracking-wider text-zinc-500 mb-2">
-
-                            Interview Question
-
-                          </h3>
-
-                          <p className="text-lg font-medium leading-relaxed">
-
-                            {item.question}
-
-                          </p>
-
-                        </div>
-
-                        {/* Answer */}
-
-                        <div className="px-6 pb-6">
-
-                          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">
-
-                            <h4 className="text-sm uppercase tracking-wider text-emerald-400 mb-3">
-
-                              Your Answer
-
-                            </h4>
-
-                            <p className="text-zinc-300 whitespace-pre-wrap leading-7">
-
-                              {item.answer || "No answer submitted."}
-
-                            </p>
-
-                            {questionFeedback && (
-                              <div className="mt-6 space-y-5">
-
-                                {/* Strengths */}
-
-                                <div>
-                                  <h4 className="text-emerald-400 font-semibold mb-2">
-                                    AI Strengths
-                                  </h4>
-
-                                  <ul className="list-disc list-inside text-zinc-300 space-y-1">
-                                    {questionFeedback.strengths.map((point, i) => (
-                                      <li key={i}>{point}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-                                {/* Weaknesses */}
-
-                                <div>
-                                  <h4 className="text-red-400 font-semibold mb-2">
-                                    AI Weaknesses
-                                  </h4>
-
-                                  <ul className="list-disc list-inside text-zinc-300 space-y-1">
-                                    {questionFeedback.weaknesses.map((point, i) => (
-                                      <li key={i}>{point}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-                                {/* Ideal Answer */}
-
-                                <div>
-                                  <h4 className="text-violet-400 font-semibold mb-2">
-                                    Ideal Answer
-                                  </h4>
-
-                                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-zinc-300 leading-7">
-                                    {questionFeedback.idealAnswer}
-                                  </div>
-                                </div>
-
-                              </div>
-                            )}
-
-                          </div>
-
-                        </div>
-
-                      </div>
-
-                    );
-                  })
-                }
-
-              </div>
-
-          }
-
-        </div>
-
-        {/* ================= REPORT FOOTER ================= */}
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-
-            <div>
-
-              <h2 className="text-2xl font-bold">
-                Interview Completed
-              </h2>
-
-              <p className="text-zinc-500 mt-2">
-                Great job completing your mock interview.
-                Review your feedback and keep practicing to improve.
-              </p>
-
-            </div>
-
-            <div className="text-center">
-
-              <p className="text-sm text-zinc-500">
-                Overall Score
-              </p>
-
-              <h1 className="text-5xl font-black text-emerald-400">
-                {feedback.score}%
-              </h1>
-
-            </div>
-
-          </div>
-
-          <div className="mt-10 flex flex-wrap gap-4 justify-center">
-
-            <button
-              className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700  font-semibold hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
-              onClick={() => router.push("/interview")} >
-              Retake Interview
-            </button>
-
-            <button
-              className="px-6 py-3 rounded-xl border border-zinc-700 hover:bg-zinc-800  hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
-              onClick={() => router.push("/dashboard")}>
-              Dashboard
-            </button>
-
-            <button
-              className=" hover:-translate-y-1 hover:shadow-xl transition-all duration-300 px-6 py-3 rounded-xl border border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 transition"
-               onClick={() => generateInterviewPDF(interview)} >
-              Download PDF
-            </button>
-
-          </div>
-
-        </div>
-
+        )}
+      </div>
+
+      <div className="flex gap-3 justify-center flex-wrap">
+        <button onClick={() => router.push("/interview")} className="border-0 text-white px-6 py-3 rounded-xl text-[13.5px] font-semibold" style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}>
+          Practice again
+        </button>
+        <button onClick={() => router.push("/dashboard")} className="bg-field border border-white/[.1] text-[#f2f2f5] px-6 py-3 rounded-xl text-[13.5px]">
+          Back to dashboard
+        </button>
       </div>
     </div>
   );

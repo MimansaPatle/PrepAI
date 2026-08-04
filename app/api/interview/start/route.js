@@ -40,6 +40,11 @@ export async function POST(req) {
       user: session.user.id,
       status: "started",
       completedAt: null,
+      role,
+      difficulty,
+      experience,
+      skills: skills || "",
+      company: company || "",
     });
 
     if (existingInterview) {

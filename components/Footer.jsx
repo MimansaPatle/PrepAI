@@ -1,21 +1,15 @@
-import React from 'react';
-import { IoTerminalOutline } from 'react-icons/io5';
+import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-zinc-900 bg-zinc-950 px-6 py-8 mt-auto">
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="bg-zinc-900 p-1.5 rounded-lg border border-zinc-800">
-            <IoTerminalOutline className="text-zinc-400" />
-          </div>
-          <span className="font-semibold text-zinc-400">&copy; 2026 PrepAI. Build Your Future.</span>
-        </div>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-zinc-300 transition">Privacy Policy</a>
-          <a href="#" className="hover:text-zinc-300 transition">Terms of Service</a>
-          <a href="#" className="hover:text-zinc-300 transition">Support Matrix</a>
-        </div>
+    <footer className="w-full mt-auto">
+      <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/[.06] text-[#5c5c68] text-[11px] uppercase tracking-[.5px]">
+        <span>© 2026 prepai — build your future</span>
+        <span className="flex gap-5">
+          <span>privacy</span>
+          <span>terms</span>
+          <span>support</span>
+        </span>
       </div>
     </footer>
   );

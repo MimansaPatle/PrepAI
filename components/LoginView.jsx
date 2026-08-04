@@ -1,28 +1,25 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from "next/navigation";
-import {
-  IoTerminalOutline,
-  IoLockClosedOutline,
-  IoMailOutline,
-  IoPersonOutline,
-  IoBriefcaseOutline,
-  IoCodeSlashOutline,
-  IoBusinessOutline,
-  IoBuildOutline
-} from 'react-icons/io5';
-import { CheckCircle2, Circle } from "lucide-react";
+import React, { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { CheckCircle2, Circle, ArrowLeft } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
+import { Robot, Card, fieldClass, labelClass } from "@/components/ui/Brand";
+import { useToast } from "@/components/ui/ToastProvider";
 
-export default function LoginView({ onLogin }) {
-  // Mode switcher state: 'login' or 'register'
-  const [authMode, setAuthMode] = useState('login');
+export default function LoginView() {
+  const pathname = usePathname();
+  const [authMode, setAuthMode] = useState(pathname === "/signup" ? "register" : "login");
   const router = useRouter();
+  const { showToast } = useToast();
 
-  // Input tracking states configured with your default schema parameters
-  const [name, setName] = useState('Mimansa');
-  const [email, setEmail] = useState('mimansa@test.com');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [experience, setExperience] = useState("Fresher");
+  const [favoriteRole, setFavoriteRole] = useState("Frontend Developer");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   const passwordChecks = {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
@@ -30,32 +27,25 @@ export default function LoginView({ onLogin }) {
     number: /\d/.test(password),
     special: /[@$!%*?&]/.test(password),
   };
-  const [experience, setExperience] = useState('Fresher');
-  const [favoriteRole, setFavoriteRole] = useState('Frontend Developer');
-  const [targetCompany, setTargetCompany] = useState('');
-  const [skills, setSkills] = useState('');
-  const [error, setError] = useState('');
+
+  const signup = authMode === "register";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
 
-    // ---------- REGISTER ----------
-    if (authMode === "register") {
+    if (signup) {
       try {
         const response = await fetch("/api/auth/signup", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name,
             email,
             password,
             experience,
             favoriteRole,
-            targetCompany,
-            skills,
           }),
         });
 
@@ -63,244 +53,146 @@ export default function LoginView({ onLogin }) {
 
         if (!response.ok) {
           setError(data.message);
+          setSubmitting(false);
           return;
         }
 
-        alert("Account created successfully!");
-
         setAuthMode("login");
-
-      } catch (error) {
+        setPassword("");
+        showToast?.({
+          title: "Account created",
+          description: "Sign in with your new credentials to continue.",
+        });
+      } catch (err) {
         setError("Something went wrong.");
+      } finally {
+        setSubmitting(false);
       }
-
       return;
     }
 
-    // ---------- LOGIN ----------
-    const result = await signIn("credentials", {
-  email,
-  password,
-  redirect: false,
-});
+    const result = await signIn("credentials", { email, password, redirect: false });
 
-if (result?.error) {
-  setError(result.error);
-  return;
-}
+    if (result?.error) {
+      setError("Invalid email or password. Please try again.");
+      setSubmitting(false);
+      return;
+    }
 
-// Get the newly created session
-const session = await getSession();
+    const session = await getSession();
 
-// Redirect based on role
-if (session?.user?.role === "admin") {
-  router.push("/admin");
-} else {
-  router.push("/dashboard");
-}
-
-router.refresh();
-  };
-
-  const toggleMode = () => {
-    setError('');
-    setAuthMode(authMode === 'login' ? 'register' : 'login');
+    if (session?.user?.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/dashboard");
+    }
+    router.refresh();
   };
 
   return (
-    <div className="w-full max-w-md bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-8 shadow-2xl backdrop-blur-md mx-4 transition-all duration-300">
-      <div className="flex flex-col items-center mb-6">
-        <div className="bg-gradient-to-tr from-violet-600 to-indigo-600 p-3 rounded-xl text-white mb-3 shadow-md shadow-violet-600/10">
-          <IoTerminalOutline className="text-2xl" />
-        </div>
-        <h2 className="text-2xl font-bold tracking-tight text-zinc-100">
-          {authMode === 'login' ? 'Welcome to PrepAI' : 'Create Sandbox Account'}
-        </h2>
-        <p className="text-zinc-500 text-xs mt-1 text-center">
-          {authMode === 'login'
-            ? 'Sign in to initialize your automated workspace'
-            : 'Register your engineering credentials to start simulation metrics'
-          }
-        </p>
-      </div>
-
-      {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs py-2.5 px-4 rounded-xl mb-4 font-medium">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Conditional Field: Registration Full Name Display */}
-        {authMode === 'register' && (
-          <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
-            <div className="relative">
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Mimansa Patle"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
-              />
-              <IoPersonOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-            </div>
-          </div>
-        )}
-
-        {/* Email Field (Required for both login/signup verification paths) */}
-        <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
-          <div className="relative">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="developer@domain.com"
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
-            />
-            <IoMailOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-          </div>
+    <div className="relative w-full min-h-screen flex items-center justify-center p-6 sm:p-10 overflow-hidden">
+      <div
+        className="absolute w-[520px] h-[520px] rounded-full animate-glowpulse pointer-events-none"
+        style={{ background: "radial-gradient(circle,rgba(139,92,246,.28),rgba(91,155,232,.1) 55%,transparent 70%)", filter: "blur(30px)" }}
+      />
+      <div className="w-full max-w-[440px] relative">
+        <div className="text-center mb-[22px]">
+          <Robot v="b" className="w-[82px] h-auto mx-auto animate-bob mb-2" />
+          <h2 className="font-extrabold text-2xl mb-1.5 tracking-[-.8px]">{signup ? "create account" : "welcome back"}</h2>
+          <p className="text-[#8a8a97] text-[12.5px]">{signup ? "register and meet your coach in under a minute" : "sign in to continue your prep journey"}</p>
         </div>
 
-        {/* Conditional Fields: Registration Meta Schema */}
-        {authMode === 'register' && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Experience</label>
-                <div className="relative">
-                  <select
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 appearance-none cursor-pointer"
-                  >
-                    <option value="Fresher">Fresher</option>
-                    <option value="1-2 Years">1–2 Years</option>
-                    <option value="3+ Years">3+ Years</option>
-                  </select>
-                  <IoBriefcaseOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Favorite Role</label>
-                <div className="relative">
-                  <select
-                    value={favoriteRole}
-                    onChange={(e) => setFavoriteRole(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 appearance-none cursor-pointer"
-                  >
-                    <option value="Frontend Developer">Frontend</option>
-                    <option value="Backend Developer">Backend</option>
-                    <option value="Full Stack Developer">Full Stack</option>
-                    <option value="Python Developer">Python Dev</option>
-                  </select>
-                  <IoCodeSlashOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Target Company</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={targetCompany}
-                  onChange={(e) => setTargetCompany(e.target.value)}
-                  placeholder="e.g., Google, Amazon"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
-                />
-                <IoBusinessOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Core Skills Matrix</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={skills}
-                  onChange={(e) => setSkills(e.target.value)}
-                  placeholder="e.g., React, Tailwind CSS, JavaScript"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
-                />
-                <IoBuildOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Passcode Field */}
-        <div>
-          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Passcode</label>
-          <div className="relative">
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition text-zinc-200 placeholder:text-zinc-700"
-            />
-            <IoLockClosedOutline className="absolute left-3 top-3.5 text-zinc-600 text-base" />
+        <Card className="p-7">
+          <div className="flex bg-field border border-white/[.06] rounded-xl p-[5px] mb-[22px]">
+            {["login", "signup"].map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => { setAuthMode(t === "signup" ? "register" : "login"); setError(""); }}
+                className="flex-1 py-2.5 rounded-[9px] border-0 text-[12.5px] font-semibold cursor-pointer uppercase tracking-[.4px]"
+                style={
+                  (t === "signup" ? signup : !signup)
+                    ? { background: "rgba(139,92,246,.18)", color: "#c4b5fd" }
+                    : { background: "transparent", color: "#7a7a87" }
+                }
+              >
+                {t === "login" ? "Sign in" : "Create account"}
+              </button>
+            ))}
           </div>
-          {authMode === "register" && password.length > 0 && (
-            <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-2">
 
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                Password Requirements
-              </p>
-
-              <PasswordItem
-                ok={passwordChecks.length}
-                text="At least 8 characters"
-              />
-
-              <PasswordItem
-                ok={passwordChecks.uppercase}
-                text="One uppercase letter"
-              />
-
-              <PasswordItem
-                ok={passwordChecks.lowercase}
-                text="One lowercase letter"
-              />
-
-              <PasswordItem
-                ok={passwordChecks.number}
-                text="One number"
-              />
-
-              <PasswordItem
-                ok={passwordChecks.special}
-                text="One special character"
-              />
-
+          {error && (
+            <div className="bg-bad/10 border border-bad/20 text-bad text-xs py-2.5 px-4 rounded-xl mb-4 font-medium">
+              {error}
             </div>
           )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {signup && (
+              <div>
+                <div className={labelClass}>FULL NAME</div>
+                <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="alex morgan" className={fieldClass} />
+              </div>
+            )}
+
+            <div>
+              <div className={labelClass}>EMAIL ADDRESS</div>
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" className={fieldClass} />
+            </div>
+
+            {signup && (
+              <>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <div className={labelClass}>EXPERIENCE</div>
+                    <select value={experience} onChange={(e) => setExperience(e.target.value)} className={fieldClass}>
+                      <option>Fresher</option>
+                      <option>1–2 Years</option>
+                      <option>3+ Years</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div className={labelClass}>TARGET ROLE</div>
+                    <select value={favoriteRole} onChange={(e) => setFavoriteRole(e.target.value)} className={fieldClass}>
+                      <option value="Frontend Developer">Frontend</option>
+                      <option value="Backend Developer">Backend</option>
+                      <option value="Full Stack Developer">Full Stack</option>
+                      <option value="Python Developer">Python Dev</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div>
+              <div className={labelClass}>PASSCODE</div>
+              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={fieldClass} />
+              {signup && password.length > 0 && (
+                <div className="mt-3 rounded-xl border border-white/[.08] bg-field p-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#7a7a87]">Password requirements</p>
+                  <PasswordItem ok={passwordChecks.length} text="At least 8 characters" />
+                  <PasswordItem ok={passwordChecks.uppercase} text="One uppercase letter" />
+                  <PasswordItem ok={passwordChecks.lowercase} text="One lowercase letter" />
+                  <PasswordItem ok={passwordChecks.number} text="One number" />
+                  <PasswordItem ok={passwordChecks.special} text="One special character" />
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full border-0 text-white py-[13px] rounded-xl text-[14px] font-semibold disabled:opacity-60 mt-1"
+              style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)", boxShadow: "0 10px 26px rgba(124,58,237,.36)" }}
+            >
+              {submitting ? "Please wait…" : signup ? "Create account" : "Sign in"}
+            </button>
+          </form>
+        </Card>
+
+        <div className="text-center mt-4">
+          <span onClick={() => router.push("/")} className="inline-flex items-center gap-1.5 text-[11.5px] text-[#6f6f7c] cursor-pointer uppercase tracking-[.5px]"><ArrowLeft className="w-3.5 h-3.5" /> back to home</span>
         </div>
-
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-violet-600/10 mt-2 hover:scale-[1.01]"
-        >
-          {authMode === 'login' ? 'Authenticate Session' : 'Register & Instantiate'}
-        </button>
-      </form>
-
-      <div className="mt-6 pt-4 border-t border-zinc-800/60 text-center">
-        <button
-          onClick={toggleMode}
-          className="text-xs text-zinc-400 hover:text-violet-400 transition underline decoration-zinc-700 underline-offset-4"
-        >
-          {authMode === 'login'
-            ? "Don't have an account? Sign up here"
-            : 'Already registered? Return to login'
-          }
-        </button>
       </div>
     </div>
   );
@@ -308,19 +200,8 @@ router.refresh();
 
 function PasswordItem({ ok, text }) {
   return (
-    <div
-      className={`flex items-center gap-2 text-sm transition ${
-        ok
-          ? "text-emerald-400"
-          : "text-zinc-500"
-      }`}
-    >
-      {ok ? (
-        <CheckCircle2 className="w-4 h-4" />
-      ) : (
-        <Circle className="w-4 h-4" />
-      )}
-
+    <div className={`flex items-center gap-2 text-sm transition ${ok ? "text-good" : "text-[#6f6f7c]"}`}>
+      {ok ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
       <span>{text}</span>
     </div>
   );
