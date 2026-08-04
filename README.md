@@ -178,7 +178,7 @@ public/
 
 | Name | Role | GitHub | LinkedIn |
 |---|---|---|---|
-| **Mimansa Patle** | Backend Developer | [MimansaPatle](https://github.com/MimansaPatle) | [mimansa-patle](https://www.linkedin.com/in/mimansa-patle-b489a6309) |
+| **Mimansa Patle** | Backend Developer | [MimansaPatle](https://github.com/MimansaPatle) | [mimansapatle](https://www.linkedin.com/in/mimansa-patle-b489a6309) |
 | **Tirth Vaghela** | Frontend Developer | [Tirthvaghela](https://github.com/Tirthvaghela) | [tirthvaghela](https://www.linkedin.com/in/tirthvaghela) |
 
 ---
