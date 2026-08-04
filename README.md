@@ -167,7 +167,7 @@ public/
 
 ---
 
-# 👩‍💻 Author
+# 👩‍💻 Devlopers
 
 **Mimansa Patle**
 
@@ -177,6 +177,13 @@ https://github.com/MimansaPatle
 LinkedIn:
 https://www.linkedin.com/in/mimansa-patle-b489a6309
 
+**Tirth Vaghela**
+
+GitHub:
+https://github.com/Tirthvaghela
+
+LinkedIn:
+https://www.linkedin.com/in/tirthvaghela
 ---
 
 ⭐ If you like this project, consider giving it a star!
