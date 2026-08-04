@@ -100,6 +100,29 @@ export default function Dashboard() {
     return { counts, max, total };
   }, [allInterviews]);
 
+  const streak = useMemo(() => {
+    const daySet = new Set(
+      allInterviews
+        .filter((iv) => iv.completedAt)
+        .map((iv) => new Date(iv.completedAt).toDateString())
+    );
+
+    let count = 0;
+    const cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+
+    if (!daySet.has(cursor.toDateString())) {
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    while (daySet.has(cursor.toDateString())) {
+      count++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return count;
+  }, [allInterviews]);
+
   const metricsAgg = useMemo(() => {
     const sums = { communication: 0, technicalKnowledge: 0, confidence: 0, problemSolving: 0 };
     let n = 0;
@@ -175,7 +198,7 @@ export default function Dashboard() {
   const stats = [
     { label: "OVERALL SCORE", value: `${dashboardData?.averageScore ?? 0}%`, color: "#34d399", size: "27px", sub: "average ai score", tint: "rgba(52,211,153,.14)", dot: "#34d399" },
     { label: "INTERVIEWS", value: `${dashboardData?.interviewCount ?? 0}`, color: "#f2f2f5", size: "27px", sub: "completed", tint: "rgba(139,92,246,.14)", dot: "#a78bfa" },
-    { label: "STREAK", value: "Soon", color: "#f2f2f5", size: "22px", sub: "daily practice", tint: "rgba(91,155,232,.14)", dot: "#5b9be8" },
+    { label: "STREAK", value: `${streak} day${streak === 1 ? "" : "s"}`, color: streak > 0 ? "#5b9be8" : "#f2f2f5", size: "24px", sub: "daily practice", tint: "rgba(91,155,232,.14)", dot: "#5b9be8" },
     { label: "FAVORITE ROLE", value: dashboardData?.user?.favoriteRole || "—", color: "#f2f2f5", size: "18px", sub: "preferred", tint: "rgba(248,113,113,.14)", dot: "#f87171" },
   ];
 
