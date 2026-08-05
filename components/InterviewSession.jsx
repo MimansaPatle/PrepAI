@@ -110,7 +110,7 @@ export default function InterviewSession() {
   }, [interviewId]);
 
   useEffect(() => {
-    if (loadingStage) return;
+    if (loadingStage || isSubmitting) return;
 
     setTimeLeft(300);
 
@@ -125,7 +125,7 @@ export default function InterviewSession() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentIndex, questions, loadingStage]);
+  }, [currentIndex, questions, loadingStage, isSubmitting]);
 
   const handleNextQuestion = async (submittedAnswer) => {
     if (isSubmitting) return;
@@ -273,8 +273,8 @@ export default function InterviewSession() {
             <div className="font-extrabold text-[17px]">{currentIndex + 1}/{TOTAL_QUESTIONS}</div>
           </div>
           <div>
-            <div className="text-[10px] text-[#7a7a87] tracking-[.6px]">TIME</div>
-            <div className={`font-extrabold text-[17px] ${timeLeft < 30 ? "text-bad animate-pulse" : "text-good"}`}>{formatTime(timeLeft)}</div>
+            <div className="text-[10px] text-[#7a7a87] tracking-[.6px]">TIME{isSubmitting ? " (paused)" : ""}</div>
+            <div className={`font-extrabold text-[17px] ${isSubmitting ? "text-[#7a7a87]" : timeLeft < 30 ? "text-bad animate-pulse" : "text-good"}`}>{formatTime(timeLeft)}</div>
           </div>
         </div>
       </Card>
