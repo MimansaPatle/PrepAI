@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <div>
-      <nav className="max-w-[1680px] mx-auto px-8 lg:px-14 xl:px-20 py-5 flex items-center justify-between">
+      <nav className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BrandMark />
         </div>
@@ -40,7 +40,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-[1680px] mx-auto px-8 lg:px-14 xl:px-20 pt-11 pb-8 grid grid-cols-1 lg:grid-cols-[1.05fr_.95fr] gap-5 items-center">
+      <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 pt-11 pb-8 grid grid-cols-1 lg:grid-cols-[1.05fr_.95fr] gap-5 items-center">
         <div className="animate-rise">
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 border border-purple/35 rounded-full text-[11.5px] text-purple-lilac mb-6 uppercase tracking-[.6px]" style={{ background: "rgba(139,92,246,.08)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-purple animate-glowpulse" /> Adaptive AI interviewing
@@ -90,7 +90,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-[1680px] mx-auto px-8 lg:px-14 xl:px-20 mt-6">
+      <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 mt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 px-[30px] py-[26px] border border-purple/20 rounded-[22px]" style={{ background: "linear-gradient(135deg,rgba(139,92,246,.1),rgba(91,155,232,.05))" }}>
           <Robot v="a" className="w-24 h-auto flex-none animate-bob" />
           <div>
@@ -100,7 +100,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div id="features" className="max-w-[1680px] mx-auto px-8 lg:px-14 xl:px-20 mt-11">
+      <div id="features" className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 mt-11">
         <div className="text-[11px] text-purple tracking-[.8px] uppercase mb-[18px]">// the complete prep suite</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f) => (
@@ -115,7 +115,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-[1680px] mx-auto px-8 lg:px-14 xl:px-20 mt-11 pb-8">
+      <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 mt-11 pb-8">
         <div className="relative overflow-hidden border border-purple/[.24] rounded-[26px] px-6 sm:px-11 py-[52px] text-center" style={{ background: "radial-gradient(600px 260px at 50% 0,rgba(124,58,237,.22),transparent),#0c0b12" }}>
           <Robot v="b" className="hidden sm:block absolute -right-8 -bottom-11 w-[200px] h-auto opacity-90 animate-floaty" />
           <div className="relative">

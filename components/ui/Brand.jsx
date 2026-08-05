@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Bot } from "lucide-react";
 
 export function Robot({ v = "b", className = "" }) {
   return (
@@ -37,9 +37,17 @@ export const labelClass = "text-[10px] text-[#7a7a87] tracking-[.6px] mb-2.5 blo
 
 export function BrandMark({ size = "text-[19px]", withCaret = true }) {
   return (
-    <span className={`font-extrabold ${size} tracking-[-1px]`}>
-      prep<span className="text-purple-light">ai</span>
-      {withCaret && <span className="text-purple animate-caret">_</span>}
+    <span className="inline-flex items-center gap-2">
+      <span
+        className="w-7 h-7 rounded-[9px] flex items-center justify-center flex-none"
+        style={{ background: "linear-gradient(135deg,#8b5cf6,#5b9be8)", boxShadow: "0 4px 12px rgba(124,58,237,.35)" }}
+      >
+        <Bot className="w-4 h-4 text-white" />
+      </span>
+      <span className={`font-extrabold ${size} tracking-[-1px]`}>
+        prep<span className="text-purple-light">ai</span>
+        {withCaret && <span className="text-purple animate-caret">_</span>}
+      </span>
     </span>
   );
 }
