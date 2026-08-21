@@ -85,7 +85,17 @@ export default function Home() {
     const welcome = welcomeRef.current;
     if (!intro || !stage || !hero || !ghost || !navEl || !navLogo || !cue || !bg || !welcome) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // The ghost's resting spot (viewport dead-center, see below) is only
+    // empty space on the 2-column desktop hero grid — below `lg` (1024px)
+    // that grid collapses to a single stacked column (`grid-cols-1
+    // lg:grid-cols-[...]` on the hero below), so viewport-center lands
+    // directly on the badge/heading text instead. There's no "empty slot"
+    // to fly between on that layout, so skip the pinned flight entirely
+    // and fall back to the same static/final-state render used for
+    // prefers-reduced-motion.
+    const isStackedLayout = window.matchMedia("(max-width: 1023px)").matches;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || isStackedLayout) {
       intro.style.height = "auto";
       stage.style.position = "static";
       stage.style.height = "auto";
