@@ -1,98 +1,49 @@
 "use client";
 
-import {
-    Bot,
-    CheckCircle2,
-    AlertTriangle,
-    LoaderCircle,
-    Info,
-    X,
-} from "lucide-react";
+import { CheckCircle2, AlertTriangle, LoaderCircle, Info, X } from "lucide-react";
 
-export default function AIAssistantToast({
-    show,
-    title,
-    description,
-    type,
-    onClose,
-}) {
+const STYLES = {
+  success: { icon: CheckCircle2, color: "#34d399", tag: "sys_ok" },
+  error: { icon: AlertTriangle, color: "#f87171", tag: "sys_error" },
+  loading: { icon: LoaderCircle, color: "#a3c9ff", tag: "processing" },
+  info: { icon: Info, color: "#d0bcff", tag: "sys_info" },
+};
 
-    const styles = {
-        success: {
-            icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
-            badge: "text-emerald-400",
-            iconBg: "bg-emerald-500/15 border border-emerald-500/20",
-            border: "border-emerald-500/25",
-        },
+export default function AIAssistantToast({ show, title, description, type, onClose }) {
+  const current = STYLES[type] || STYLES.info;
+  if (!show) return null;
 
-        error: {
-            icon: <AlertTriangle className="w-5 h-5 text-red-400" />,
-            badge: "text-red-400",
-            iconBg: "bg-red-500/15 border border-red-500/20",
-            border: "border-red-500/25",
-        },
+  const Icon = current.icon;
 
-        loading: {
-            icon: <LoaderCircle className="w-5 h-5 text-violet-400 animate-spin" />,
-            badge: "text-violet-400",
-            iconBg: "bg-violet-500/15 border border-violet-500/20",
-            border: "border-violet-500/25",
-        },
+  return (
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] w-[92vw] max-w-[420px] animate-toast">
+      <div className="relative overflow-hidden rounded-[4px] border border-[#494454]" style={{ background: "#1f1f24" }}>
+        <div className="flex gap-3.5 p-4">
+          <div
+            className="flex w-9 h-9 items-center justify-center border flex-none"
+            style={{ borderColor: `${current.color}55`, background: `${current.color}14` }}
+          >
+            <Icon className={`w-4 h-4 ${type === "loading" ? "animate-spin" : ""}`} style={{ color: current.color }} />
+          </div>
 
-        info: {
-            icon: <Info className="w-5 h-5 text-sky-400" />,
-            badge: "text-sky-400",
-            iconBg: "bg-sky-500/15 border border-sky-500/20",
-            border: "border-sky-500/25",
-        },
-    };
+          <div className="flex-1 min-w-0 pr-5">
+            <p className="text-[10px] uppercase tracking-[.2em] font-bold" style={{ color: current.color }}>
+              {`// ${current.tag}`}
+            </p>
+            <h3 className="mt-1 text-[14px] text-[#e4e1e8] lowercase">{title}</h3>
+            {description && <p className="mt-1 text-[12px] leading-[1.6] text-[#958ea0] lowercase">{description}</p>}
+          </div>
 
-    const current = styles[type];
-    if (!show) return null;
-
-
-
-    return (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] w-[420px] animate-toast">
-
-            <div className={`overflow-hidden rounded-2xl border ${current.border} bg-zinc-950/95 backdrop-blur-xl shadow-[0_0_40px_rgba(139,92,246,0.15)]`}>
-
-                <div className="flex gap-4 p-5 relative">
-
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${current.iconBg}`}>
-
-                        {current.icon}
-
-                    </div>
-
-                    <div className="flex-1">
-
-                        <p className={`text-[11px] uppercase tracking-[0.25em] font-semibold ${current.badge}`}>
-                            AI Assistant
-                        </p>
-
-                        <h3 className="mt-1 text-base font-semibold text-white">
-                            {title}
-                        </h3>
-
-                        <p className="mt-1 text-sm text-zinc-400 leading-relaxed">
-                            {description}
-                        </p>
-                        <button
-                            onClick={onClose}
-                            className="absolute top-4 right-4 p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <div className="h-[2px] bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-400 animate-toast-progress" />
-
-            </div>
-
+          <button
+            onClick={onClose}
+            className="absolute top-3.5 right-3.5 text-[#6f6f7c] hover:text-[#e4e1e8] transition-colors duration-200 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
-    );
+
+        <div className="h-[2px] animate-toast-progress" style={{ background: current.color }} />
+      </div>
+    </div>
+  );
 }

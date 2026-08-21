@@ -3,15 +3,102 @@
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import { useRouter } from "next/navigation";
-import { Download, CheckCircle2, TrendingUp, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, Download, ArrowRight, ChevronDown } from "lucide-react";
 import { generateInterviewPDF } from "@/lib/generateInterviewPDF";
-import { Robot, Card } from "@/components/ui/Brand";
+import FeedbackSkeleton from "@/components/FeedbackSkeleton";
+
+const EXP_LABEL = { "Fresher": "entry-level", "1–2 Years": "mid-level", "3+ Years": "senior" };
+
+function relativeTime(date) {
+  if (!date) return "—";
+  const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function bandColor(score, max) {
+  const pct = (score / max) * 100;
+  if (pct >= 80) return "#34d399";
+  if (pct >= 60) return "#a3c9ff";
+  return "#ffb4ab";
+}
+
+function QuestionRow({ index, item, qf }) {
+  const [open, setOpen] = useState(false);
+  const score = qf?.score ?? null;
+  const color = score == null ? "#494454" : bandColor(score, 10);
+  const filled = score == null ? 0 : Math.max(0, Math.min(5, Math.round((score / 10) * 5)));
+
+  return (
+    <div className="border-b border-[#494454]/20 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 hover:bg-[#0e0e12]/50 transition-colors duration-200 text-left cursor-pointer"
+      >
+        <div className="flex items-start md:items-center gap-6 flex-1 min-w-0">
+          <span className="font-display text-[24px] text-[#cbc3d7]/40 w-8 text-right flex-none">{String(index + 1).padStart(2, "0")}</span>
+          <span className="text-[14px] text-[#e4e1e8]/90 flex-1 min-w-0">{item.question}</span>
+        </div>
+        <div className="flex items-center gap-6 w-full md:w-auto justify-end flex-none">
+          <div className="flex gap-1 h-1.5 w-32 flex-none">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-full flex-1" style={{ background: i < filled ? color : "#353439" }} />
+            ))}
+          </div>
+          <span className="w-12 text-right text-[12px] font-bold flex-none" style={{ color }}>{score != null ? `${score}/10` : "—"}</span>
+          <ChevronDown className={`w-4 h-4 text-[#6f6f7c] flex-none transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-5 pl-4 md:pl-[68px]">
+          <div className="border border-[#494454]/40 bg-[#0e0e12] p-4">
+            <div className="text-[9.5px] uppercase tracking-[.15em] text-[#6f6f7c] mb-2">your answer</div>
+            <p className="text-[12.5px] text-[#cbc3d7] leading-[1.7] whitespace-pre-wrap">{item.answer || "No answer submitted."}</p>
+
+            {qf && (
+              <div className="mt-4 space-y-3.5">
+                {qf.strengths?.length > 0 && (
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[.1em] text-[#34d399] mb-1.5">strengths</div>
+                    <ul className="space-y-1">
+                      {qf.strengths.map((p, i) => <li key={i} className="text-[12px] text-[#cbc3d7]">— {p}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {qf.weaknesses?.length > 0 && (
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[.1em] text-[#ffb4ab] mb-1.5">weaknesses</div>
+                    <ul className="space-y-1">
+                      {qf.weaknesses.map((p, i) => <li key={i} className="text-[12px] text-[#cbc3d7]">— {p}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {qf.idealAnswer && (
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[.1em] text-[#d0bcff] mb-1.5">ideal answer</div>
+                    <div className="border border-[#494454]/40 bg-[#1f1f24] p-3 text-[12px] text-[#cbc3d7] leading-[1.7]">{qf.idealAnswer}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function FeedbackReport() {
   const [answers, setAnswers] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
   const [interview, setInterview] = useState(null);
+  const [retrying, setRetrying] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -42,187 +129,183 @@ export default function FeedbackReport() {
     loadFeedback();
   }, []);
 
+  const handleRetry = async () => {
+    if (!interview || retrying) return;
+    setRetrying(true);
+    try {
+      const res = await fetch("/api/interview/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: interview.role,
+          experience: interview.experience,
+          difficulty: interview.difficulty,
+          skills: interview.skills,
+          company: interview.company,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.message);
+        setRetrying(false);
+        return;
+      }
+      router.push(`/interviewsession?id=${data.interviewId}`);
+    } catch (err) {
+      console.error(err);
+      setRetrying(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-[58vh] flex flex-col items-center justify-center text-center animate-rise">
-        <Robot v="a" className="w-[110px] h-auto animate-bob mb-6" />
-        <p className="text-[#8a8a97] text-[13px] tracking-[.3px]">generating ai feedback…</p>
-      </div>
-    );
+    return <FeedbackSkeleton />;
   }
 
   if (!feedback || feedback.score == null) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center text-bad text-[13px]">
-        Feedback not available.
+      <div className="h-screen flex items-center justify-center dot-matrix-fine" style={{ background: "#131317" }}>
+        <p className="text-[13px] text-[#ffb4ab]">feedback not available.</p>
       </div>
     );
   }
 
-  const scoreColor = feedback.score >= 80 ? "#34d399" : feedback.score >= 60 ? "#a78bfa" : "#f87171";
-  const circleDeg = Math.max(0, Math.min(360, (feedback.score / 100) * 360));
+  const scoreColor = bandColor(feedback.score, 100);
+  const circumference = 339.29;
+  const dashOffset = circumference - (Math.max(0, Math.min(100, feedback.score)) / 100) * circumference;
 
   const metrics = [
-    { label: "Communication", score: feedback?.metrics?.communication?.score ?? 0, reason: feedback?.metrics?.communication?.reason ?? "", color: "#5b9be8" },
-    { label: "Technical knowledge", score: feedback?.metrics?.technicalKnowledge?.score ?? 0, reason: feedback?.metrics?.technicalKnowledge?.reason ?? "", color: "#8b5cf6" },
-    { label: "Confidence", score: feedback?.metrics?.confidence?.score ?? 0, reason: feedback?.metrics?.confidence?.reason ?? "", color: "#a78bfa" },
-    { label: "Problem solving", score: feedback?.metrics?.problemSolving?.score ?? 0, reason: feedback?.metrics?.problemSolving?.reason ?? "", color: "#34d399" },
+    { label: "communication", score: feedback?.metrics?.communication?.score ?? 0 },
+    { label: "technical", score: feedback?.metrics?.technicalKnowledge?.score ?? 0 },
+    { label: "confidence", score: feedback?.metrics?.confidence?.score ?? 0 },
+    { label: "problem solving", score: feedback?.metrics?.problemSolving?.score ?? 0 },
   ];
 
+  const totalWords = answers.reduce((sum, a) => sum + (a.answer ? a.answer.trim().split(/\s+/).filter(Boolean).length : 0), 0);
+  const expLabel = EXP_LABEL[interview?.experience] || (interview?.experience || "").toLowerCase();
+
   return (
-    <div className="animate-rise">
-      <div className="flex items-center justify-between mb-[22px] gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <Robot v="a" className="w-14 h-auto animate-bob" />
-          <div>
-            <h1 className="font-extrabold text-[24px] sm:text-[26px] mb-[5px] tracking-[-.8px]">Interview report</h1>
-            <p className="text-[#8a8a97] text-[12.5px]">{interview?.role} / {(interview?.difficulty || "").toLowerCase()} / completed {interview?.completedAt ? new Date(interview.completedAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) : "—"}</p>
-          </div>
+    <div className="min-h-screen md:h-screen flex flex-col overflow-visible md:overflow-hidden" style={{ background: "#131317" }}>
+      <div className="dot-matrix-fine fixed inset-0 pointer-events-none" />
+
+      <header className="flex-none sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-[#494454] backdrop-blur-md" style={{ background: "rgba(14,14,18,.9)" }}>
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-2 text-[12px] font-bold tracking-[.2em] text-[#cbc3d7] hover:text-[#d0bcff] transition-colors duration-200 cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" /> dashboard
+        </button>
+
+        <div className="hidden md:block text-[10px] tracking-[.2em] text-[#cbc3d7]/50">
+          {(interview?.difficulty || "").toLowerCase()} &middot; {(interview?.role || "").toLowerCase()} &middot; {relativeTime(interview?.completedAt)}
         </div>
+
         <button
           onClick={() => generateInterviewPDF(interview)}
-          className="inline-flex items-center gap-2 border-0 text-white px-5 py-[11px] rounded-[11px] text-[13px] font-semibold"
-          style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
+          className="flex items-center gap-2 text-[12px] font-bold tracking-[.2em] text-[#cbc3d7] hover:text-[#d0bcff] transition-colors duration-200 cursor-pointer"
         >
-          <Download className="w-3.5 h-3.5" /> Download PDF
+          <Download className="w-4 h-4" /> export pdf
         </button>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-[18px] mb-[18px]">
-        <Card className="p-[26px] text-center">
-          <div className="text-[10px] text-[#7a7a87] tracking-[.6px] mb-4">OVERALL PERFORMANCE</div>
-          <div className="w-[148px] h-[148px] mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(${scoreColor} 0deg ${circleDeg}deg,#16161e ${circleDeg}deg)` }}>
-            <div className="w-[114px] h-[114px] rounded-full bg-panel flex flex-col items-center justify-center">
-              <span className="font-extrabold text-[36px]" style={{ color: scoreColor }}>
-                <CountUp end={feedback.score} duration={1.4} suffix="%" />
+      <div className="relative flex flex-1 flex-col md:flex-row overflow-visible md:overflow-hidden w-full">
+        <aside className="w-full md:w-[420px] flex-none border-r border-[#494454] flex flex-col items-center justify-center p-8 lg:p-12 relative md:overflow-y-auto" style={{ background: "#0e0e12" }}>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "rgba(208,188,255,.05)", filter: "blur(80px)" }} />
+
+          <h2 className="relative text-[12px] font-bold uppercase tracking-[.3em] text-[#d0bcff] mb-16 whitespace-nowrap">{"// interview_complete"}</h2>
+
+          <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-16 flex-none">
+            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="54" fill="none" stroke="#353439" strokeWidth="4" />
+              <circle
+                cx="60" cy="60" r="54" fill="none" stroke={scoreColor} strokeWidth="6"
+                strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="square"
+                style={{ transition: "stroke-dashoffset 1s ease-out", filter: `drop-shadow(0 0 12px ${scoreColor}66)` }}
+              />
+            </svg>
+            <div className="text-center z-10 flex flex-col items-center">
+              <span className="font-display text-[64px] leading-none text-[#e4e1e8] tracking-tight">
+                <CountUp end={feedback.score} duration={1.2} />
               </span>
-              <span className="text-[10px] text-[#7a7a87]">readiness</span>
+              <span className="text-[12px] font-bold tracking-[.2em] text-[#cbc3d7]/70 mt-1">/ 100 overall</span>
             </div>
           </div>
-          <div className="text-[13px] font-semibold mb-1.5" style={{ color: scoreColor }}>{feedback.recommendation || "—"}</div>
-          <div className="text-[11.5px] text-[#8a8a97] leading-[1.5]">{feedback.summary}</div>
-        </Card>
 
-        <Card className="p-[22px] sm:p-[26px]">
-          <div className="font-semibold text-[15px] mb-5">Competency breakdown</div>
-          {metrics.map((c) => {
-            const pct = Math.max(0, Math.min(100, (c.score / 5) * 100));
-            return (
-              <div key={c.label} className="mb-[17px]">
-                <div className="flex justify-between text-[13px] mb-2">
-                  <span className="text-[#c4c4cf]">{c.label}</span>
-                  <span className="font-extrabold" style={{ color: c.color }}>{c.score}/5</span>
-                </div>
-                <div className="h-2 bg-field rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: c.color }} />
-                </div>
-                {c.reason && <div className="text-[11px] text-[#6f6f7c] mt-1.5 leading-[1.5]">{c.reason}</div>}
-              </div>
-            );
-          })}
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[18px] mb-[18px]">
-        <div className="p-[22px] bg-panel border border-good/20 rounded-[18px]">
-          <div className="flex items-center gap-1.5 font-semibold text-[14px] text-good mb-3.5"><CheckCircle2 className="w-4 h-4" /> strengths</div>
-          {feedback?.strengths?.length ? feedback.strengths.map((s, i) => (
-            <div key={i} className="flex gap-[11px] py-[7px] text-[12.5px] leading-[1.5] text-[#c4c4cf]"><Plus className="w-3.5 h-3.5 text-good flex-none mt-0.5" />{s}</div>
-          )) : <div className="text-[12px] text-[#6f6f7c]">AI did not identify any strengths.</div>}
-        </div>
-        <div className="p-[22px] bg-panel border border-purple/20 rounded-[18px]">
-          <div className="flex items-center gap-1.5 font-semibold text-[14px] text-purple-light mb-3.5"><TrendingUp className="w-4 h-4" /> areas to improve</div>
-          {feedback?.weaknesses?.length ? feedback.weaknesses.map((w, i) => (
-            <div key={i} className="flex gap-[11px] py-[7px] text-[12.5px] leading-[1.5] text-[#c4c4cf]"><ChevronRight className="w-3.5 h-3.5 text-purple-light flex-none mt-0.5" />{w}</div>
-          )) : <div className="text-[12px] text-[#6f6f7c]">AI did not identify any weaknesses.</div>}
-        </div>
-      </div>
-
-      {feedback?.roadmap?.length > 0 && (
-        <Card className="p-[22px] sm:p-[24px] mb-[18px]">
-          <div className="font-semibold text-[15px] mb-5">// your 2-week roadmap</div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {feedback.roadmap.map((r, i) => (
-              <div key={i} className="p-[17px] bg-field rounded-[14px]">
-                <div className="w-7 h-7 rounded-[9px] flex items-center justify-center font-extrabold text-[13px] text-purple-light mb-3" style={{ background: "rgba(139,92,246,.16)" }}>{i + 1}</div>
-                <div className="text-[10.5px] uppercase tracking-[.4px] text-purple-lilac mb-1">{r.day}</div>
-                <div className="text-[13px] font-semibold mb-1.5">{r.topic}</div>
-                <div className="text-[11.5px] text-[#8a8a97] leading-[1.5]">{r.goal}</div>
-                {r.resource && <a href={r.resource} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[11px] text-purple-light">open resource →</a>}
-              </div>
-            ))}
+          <div className="relative text-center mb-16 w-full">
+            <div className="font-display text-[24px] text-[#e4e1e8] mb-3 tracking-tight lowercase">{feedback.recommendation?.toLowerCase() || "—"}.</div>
+            <div className="text-[14px] text-[#cbc3d7]">for {expLabel} {interview?.role?.toLowerCase()} roles</div>
           </div>
-        </Card>
-      )}
 
-      <div className="mb-[22px]">
-        <div className="text-[11px] text-purple tracking-[.8px] uppercase mb-[14px]">// interview analysis</div>
-        {answers.length === 0 ? (
-          <Card className="p-6 text-center text-[#7a7a87] text-[13px]">No interview questions found.</Card>
-        ) : (
-          <div className="space-y-3.5">
-            {answers.map((item, index) => {
-              const qf = feedback?.questionFeedback?.[index];
-              const qColor = qf?.score >= 8 ? "#34d399" : qf?.score >= 5 ? "#a78bfa" : "#f87171";
+          <div className="relative grid grid-cols-2 gap-x-8 gap-y-7 w-full max-w-[300px] border-t border-[#494454]/30 pt-8">
+            {metrics.map((m) => {
+              const color = bandColor(m.score, 5);
               return (
-                <Card key={index} className="overflow-hidden">
-                  <div className="flex justify-between items-center px-5 sm:px-6 py-4 border-b border-white/[.07] bg-field">
-                    <span className="text-[10.5px] uppercase tracking-[.5px] text-purple-lilac">question {index + 1}</span>
-                    <span className="text-[11px] px-2.5 py-1 rounded-full font-medium" style={{ background: `${qColor}22`, color: qColor }}>
-                      {qf ? `${qf.score}/10` : "Not evaluated"}
-                    </span>
-                  </div>
-                  <div className="p-5 sm:p-6">
-                    <div className="text-[10px] uppercase tracking-[.5px] text-[#7a7a87] mb-2">interview question</div>
-                    <p className="text-[14px] font-medium leading-[1.6] text-[#e6e6ec]">{item.question}</p>
-                  </div>
-                  <div className="px-5 sm:px-6 pb-6">
-                    <div className="bg-field rounded-xl border border-white/[.06] p-4 sm:p-5">
-                      <div className="text-[10px] uppercase tracking-[.5px] text-good mb-2.5">your answer</div>
-                      <p className="text-[#c4c4cf] text-[13px] whitespace-pre-wrap leading-[1.7]">{item.answer || "No answer submitted."}</p>
-
-                      {qf && (
-                        <div className="mt-5 space-y-4">
-                          {qf.strengths?.length > 0 && (
-                            <div>
-                              <div className="text-good font-semibold text-[12px] mb-1.5">AI strengths</div>
-                              <ul className="space-y-1">
-                                {qf.strengths.map((p, i) => <li key={i} className="text-[12px] text-[#c4c4cf]">• {p}</li>)}
-                              </ul>
-                            </div>
-                          )}
-                          {qf.weaknesses?.length > 0 && (
-                            <div>
-                              <div className="text-bad font-semibold text-[12px] mb-1.5">AI weaknesses</div>
-                              <ul className="space-y-1">
-                                {qf.weaknesses.map((p, i) => <li key={i} className="text-[12px] text-[#c4c4cf]">• {p}</li>)}
-                              </ul>
-                            </div>
-                          )}
-                          {qf.idealAnswer && (
-                            <div>
-                              <div className="text-purple-light font-semibold text-[12px] mb-1.5">Ideal answer</div>
-                              <div className="bg-panel border border-white/[.06] rounded-xl p-3.5 text-[12px] text-[#c4c4cf] leading-[1.7]">{qf.idealAnswer}</div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+                <div key={m.label} className="text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#cbc3d7]/70 mb-3">{m.label}</div>
+                  <div className="font-display text-[32px]" style={{ color, filter: `drop-shadow(0 0 8px ${color}4d)` }}>{m.score}<span className="text-[13px] text-[#6f6f7c]">/5</span></div>
+                </div>
               );
             })}
           </div>
-        )}
-      </div>
+          <div className="relative mt-6 text-[10.5px] text-[#6f6f7c] tracking-[.1em] uppercase">{totalWords.toLocaleString()} words answered</div>
+        </aside>
 
-      <div className="flex gap-3 justify-center flex-wrap">
-        <button onClick={() => router.push("/interview")} className="border-0 text-white px-6 py-3 rounded-xl text-[13.5px] font-semibold" style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}>
-          Practice again
-        </button>
-        <button onClick={() => router.push("/dashboard")} className="bg-field border border-white/[.1] text-[#f2f2f5] px-6 py-3 rounded-xl text-[13.5px]">
-          Back to dashboard
-        </button>
+        <main className="flex-1 md:overflow-y-auto p-6 md:p-12 lg:p-16 xl:p-24" style={{ background: "#131317" }}>
+          <div className="max-w-4xl mx-auto space-y-20">
+            <section>
+              <h3 className="text-[12px] font-bold uppercase tracking-[.2em] text-[#a3c9ff] mb-6">{"// what worked"}</h3>
+              <div className="space-y-3">
+                {feedback?.strengths?.length ? feedback.strengths.map((s, i) => (
+                  <div key={i} className="border border-[#494454]/50 p-5 flex items-start gap-4 hover:bg-[#1f1f24] transition-colors duration-200 group" style={{ background: "#1b1b20" }}>
+                    <span className="text-[#a3c9ff] font-bold flex-none group-hover:drop-shadow-[0_0_8px_rgba(163,201,255,0.5)]">+</span>
+                    <p className="text-[14px] text-[#e4e1e8]/90">{s}</p>
+                  </div>
+                )) : <div className="text-[12px] text-[#6f6f7c]">no strengths identified.</div>}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-[12px] font-bold uppercase tracking-[.2em] text-[#ffb4ab] mb-6">{"// what to fix"}</h3>
+              <div className="space-y-3">
+                {feedback?.weaknesses?.length ? feedback.weaknesses.map((w, i) => (
+                  <div key={i} className="border border-[#494454]/50 p-5 flex items-start gap-4 hover:bg-[#1f1f24] transition-colors duration-200 group" style={{ background: "#1b1b20" }}>
+                    <span className="text-[#ffb4ab] font-bold flex-none group-hover:drop-shadow-[0_0_8px_rgba(255,180,171,0.5)]">!</span>
+                    <p className="text-[14px] text-[#e4e1e8]/90">{w}</p>
+                  </div>
+                )) : <div className="text-[12px] text-[#6f6f7c]">no weaknesses identified.</div>}
+              </div>
+            </section>
+
+            <section className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-[#494454]/30">
+              <button
+                onClick={() => router.push("/interview")}
+                className="bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] px-8 py-4 rounded-full flex items-center justify-center gap-3 hover:bg-[#e9ddff] transition-all duration-200 cursor-pointer group"
+                style={{ boxShadow: "0 0 20px 0 rgba(208,188,255,.2)" }}
+              >
+                drill my weak spots <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </button>
+              <button
+                onClick={handleRetry}
+                disabled={retrying}
+                className="bg-transparent border border-[#494454] text-[#e4e1e8] text-[12px] font-bold tracking-[.2em] px-8 py-4 rounded-full hover:bg-[#2a292e] transition-colors duration-200 disabled:opacity-60 cursor-pointer"
+              >
+                {retrying ? "starting…" : "retry interview"}
+              </button>
+            </section>
+
+            <section>
+              <h3 className="text-[12px] font-bold uppercase tracking-[.2em] text-[#d0bcff] mb-10">{"// question-by-question"}</h3>
+              {answers.length === 0 ? (
+                <div className="text-[13px] text-[#6f6f7c] p-6 text-center border border-[#494454]/30">no interview questions found.</div>
+              ) : (
+                <div>
+                  {answers.map((item, index) => (
+                    <QuestionRow key={index} index={index} item={item} qf={feedback?.questionFeedback?.[index]} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </main>
       </div>
     </div>
   );

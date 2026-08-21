@@ -59,6 +59,7 @@ export async function GET() {
       user: {
         name: user.name,
         favoriteRole: user.favoriteRole,
+        experience: user.experience,
       },
 
       averageScore: Math.round(averageScore),

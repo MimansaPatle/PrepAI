@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jetbrains);
   --font-mono: var(--font-jetbrains);
+  --font-display: var(--font-dotgothic);
 }
 
 @theme {
@@ -21,7 +22,7 @@
   --color-good: #34d399;
   --color-bad: #f87171;
 
-  --animate-rise: rise .6s ease both;
+  --animate-rise: rise .7s cubic-bezier(.22,1,.36,1) both;
   --animate-floaty: floaty 4s ease-in-out infinite;
   --animate-bob: bob 3s ease-in-out infinite;
   --animate-glowpulse: glowpulse 2.6s ease-in-out infinite;
@@ -29,6 +30,13 @@
   --animate-dotp: dotp 1.1s ease-in-out infinite;
 }
 
+@keyframes logoIn {
+  from { opacity: 0; transform: scale(.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-logo-in {
+  animation: logoIn .8s cubic-bezier(.22,1,.36,1) both;
+}
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
@@ -58,9 +66,17 @@
   to { width: 100%; }
 }
 
-html, body { margin: 0; padding: 0; background: #08080c; }
+/* overflow-x lives ONLY on <html> (the true root scroller), never on <body>
+   or any nested div — setting overflow-x on a box forces its overflow-y to
+   compute to `auto` too (CSS mismatch-upgrade rule), which turns that box
+   into its own scroll-clipping container and breaks `position: sticky` for
+   every descendant between it and the real viewport. <body> used to carry
+   overflow-x:hidden here and silently became exactly that trap. */
+html, body { margin: 0; padding: 0; background: #131317; }
+html { overflow-x: hidden; }
 * { box-sizing: border-box; }
 ::selection { background: rgba(139, 92, 246, .4); }
+:focus-visible { outline: 2px solid #d0bcff; outline-offset: 2px; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, .28); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -70,14 +86,6 @@ select { -webkit-appearance: none; appearance: none; }
 body {
   background: var(--background);
   color: var(--foreground);
-}
-
-/* App background glows */
-.prepai-bg {
-  background:
-    radial-gradient(900px 520px at 82% -6%, rgba(124, 58, 237, .22), transparent 58%),
-    radial-gradient(760px 520px at 6% 108%, rgba(91, 155, 232, .12), transparent 55%),
-    #08080c;
 }
 
 @keyframes progressLoop {
@@ -198,4 +206,44 @@ body {
 
 .animate-toast {
   animation: toast 3s ease forwards;
+}
+
+/* ---------------- Landing: Robotic AI Design System ---------------- */
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.dot-matrix-fine {
+  background-image: radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.dot-grid-terminal {
+  background-image: radial-gradient(rgba(148, 137, 158, .55) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@keyframes blockcaret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blockcaret {
+  animation: blockcaret 1.1s steps(1) infinite;
+}
+
+/* ---------------- Accessibility: reduced motion ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

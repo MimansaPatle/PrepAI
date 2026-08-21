@@ -1,11 +1,26 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { Robot, Card, fieldClass, labelClass, AutocompleteInput, SkillTagInput, SKILL_SUGGESTIONS, COMPANY_SUGGESTIONS } from "@/components/ui/Brand";
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, X, Workflow, Terminal, Square, SquareCheck } from "lucide-react";
+import { SKILL_SUGGESTIONS, COMPANY_SUGGESTIONS } from "@/components/ui/Brand";
+
+const ROLES = ["Full Stack Developer", "Frontend Developer", "Backend Developer", "Python Developer"];
+
+const EXPERIENCE_TIERS = [
+  { value: "Fresher", label: "fresher" },
+  { value: "1–2 Years", label: "mid-level" },
+  { value: "3+ Years", label: "senior" },
+];
+
+const COMPLEXITY = [
+  { value: "Easy", tier: "L1", label: "standard" },
+  { value: "Medium", tier: "L2", label: "advanced" },
+  { value: "Hard", tier: "L3", label: "expert" },
+];
 
 const PRESETS = [
-  { role: "Full Stack Developer", difficulty: "Medium", dot: "#8b5cf6" },
-  { role: "Backend Developer", difficulty: "Hard", dot: "#5b9be8" },
+  { role: "Full Stack Developer", difficulty: "Medium", dot: "#d0bcff" },
+  { role: "Backend Developer", difficulty: "Hard", dot: "#a3c9ff" },
   { role: "Frontend Developer", difficulty: "Easy", dot: "#34d399" },
 ];
 
@@ -14,6 +29,140 @@ const STEPS = [
   { n: "2", t: "Answer live", d: "Respond to timed prompts by voice or text while your coach tracks structure and depth." },
   { n: "3", t: "Get your report", d: "Receive a scored breakdown, strengths, gaps and a personalized 2-week roadmap." },
 ];
+
+const glassPanel = { background: "#1f1f24" };
+const ctaStyle = { boxShadow: "0 0 20px 0 rgba(208,188,255,.2)" };
+
+function useOutsideClick(ref, onOutside) {
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) onOutside();
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [ref, onOutside]);
+}
+
+function FieldLabel({ children }) {
+  return <label className="text-[11px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase mb-3 block">{children}</label>;
+}
+
+function SkillTagField({ value, onChange, suggestions }) {
+  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  useOutsideClick(wrapRef, () => setOpen(false));
+
+  const tags = value.split(",").map((s) => s.trim()).filter(Boolean);
+
+  const addTag = (tag) => {
+    const trimmed = tag.trim();
+    if (!trimmed || tags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange(tags.length ? `${value}, ${trimmed}` : trimmed);
+    setDraft("");
+    setOpen(false);
+  };
+
+  const removeTag = (tag) => onChange(tags.filter((t) => t !== tag).join(", "));
+
+  const filtered = draft.trim()
+    ? suggestions
+        .filter((s) => s.toLowerCase().includes(draft.trim().toLowerCase()) && !tags.some((t) => t.toLowerCase() === s.toLowerCase()))
+        .slice(0, 6)
+    : [];
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <div className="flex flex-wrap gap-2 items-center">
+        {tags.map((t) => (
+          <span
+            key={t}
+            onClick={() => removeTag(t)}
+            title="Click to remove"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#d0bcff]/50 text-[#d0bcff] text-[11px] font-bold uppercase tracking-[.05em] cursor-pointer hover:border-[#d0bcff]"
+            style={{ background: "rgba(208,188,255,.08)" }}
+          >
+            {t} <X className="w-3 h-3" />
+          </span>
+        ))}
+        <input
+          value={draft}
+          onChange={(e) => { setDraft(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); addTag(draft); }
+            if (e.key === "Backspace" && !draft && tags.length) removeTag(tags[tags.length - 1]);
+          }}
+          placeholder={tags.length ? "+ add skill" : "type to add a skill…"}
+          autoComplete="off"
+          className="flex-1 min-w-[140px] bg-transparent outline-none text-[13px] text-[#e4e1e8] placeholder:text-[#6f6f7c] py-1.5 px-2.5 border border-dashed border-[#494454] focus:border-[#d0bcff]/60 transition-colors"
+        />
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute z-20 mt-1.5 w-full max-w-[320px] bg-[#1f1f24] border border-[#494454] max-h-[220px] overflow-y-auto">
+          {filtered.map((s) => (
+            <div key={s} onMouseDown={() => addTag(s)} className="px-3.5 py-2.5 text-[13px] text-[#e4e1e8] hover:bg-[#d0bcff]/10 cursor-pointer">
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompanyField({ value, onChange, suggestions }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  useOutsideClick(wrapRef, () => setOpen(false));
+
+  const query = value.trim().toLowerCase();
+  const filtered = query
+    ? suggestions.filter((s) => s.toLowerCase().includes(query) && s.toLowerCase() !== query).slice(0, 6)
+    : [];
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="e.g. Google, Amazon…"
+        autoComplete="off"
+        className="w-full bg-transparent border-0 border-b border-[#494454] focus:border-[#d0bcff] outline-none text-[#e4e1e8] text-[15px] px-0 py-3 placeholder:text-[#6f6f7c] transition-colors"
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-20 mt-1.5 w-full bg-[#1f1f24] border border-[#494454] max-h-[220px] overflow-y-auto">
+          {filtered.map((s) => (
+            <div
+              key={s}
+              onMouseDown={() => { onChange(s); setOpen(false); }}
+              className="px-3.5 py-2.5 text-[13px] text-[#e4e1e8] hover:bg-[#d0bcff]/10 cursor-pointer"
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WorkflowItem({ done, dim, label, desc }) {
+  const Icon = done ? SquareCheck : Square;
+  return (
+    <div className={`flex items-start gap-3 ${dim ? "opacity-50" : ""}`}>
+      <Icon className={`w-4 h-4 flex-none mt-0.5 ${done ? "text-[#d0bcff]" : "text-[#494454]"}`} />
+      <div>
+        <p className={`text-[11px] font-bold tracking-[.15em] uppercase ${done ? "text-[#d0bcff]" : "text-[#e4e1e8]"}`}>{label}</p>
+        <p className="text-[11px] text-[#958ea0] mt-1">{desc}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function InterviewSetup() {
   const [role, setRole] = useState("Full Stack Developer");
@@ -25,6 +174,9 @@ export default function InterviewSetup() {
   const [launchingPreset, setLaunchingPreset] = useState(null);
 
   const router = useRouter();
+
+  const experienceIndex = Math.max(0, EXPERIENCE_TIERS.findIndex((t) => t.value === experience));
+  const complexity = COMPLEXITY.find((c) => c.value === difficulty) || COMPLEXITY[1];
 
   const startInterview = async (overrides = {}) => {
     const payload = {
@@ -75,116 +227,179 @@ export default function InterviewSetup() {
   };
 
   return (
-    <div className="animate-rise">
-      <div className="grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-6 items-center mb-8">
-        <div className="order-1">
-          <div className="inline-flex items-center gap-2 px-3 py-[5px] border border-purple/35 rounded-full text-[10.5px] text-purple-lilac mb-2.5 uppercase tracking-[.5px]" style={{ background: "rgba(139,92,246,.08)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-purple animate-glowpulse" />engine v2.5 active
-          </div>
-          <h1 className="font-extrabold text-[26px] sm:text-[30px] tracking-[-1px] mb-3">Configure your session</h1>
-          <p className="text-[#8a8a97] text-[13px] leading-[1.7] max-w-[560px] mb-4">
-            Set the parameters below and I&apos;ll curate contextual questions tuned to your background, target role and company vibe.
-          </p>
+    <div className="animate-rise flex flex-col gap-10">
+      <div>
+        <h1 className="font-display text-[28px] sm:text-[36px] text-[#e4e1e8] uppercase tracking-[.05em] flex items-center gap-3 m-0">
+          {"// session_config"} <span className="inline-block w-3 h-3 sm:w-3.5 sm:h-3.5 bg-[#d0bcff] animate-blockcaret" />
+        </h1>
+        <p className="text-[14px] sm:text-[15px] leading-[1.7] text-[#cbc3d7] mt-3 max-w-2xl">
+          Configure parameters for your interview simulation. Role, skills, experience and complexity all tune the questions the engine streams to you.
+        </p>
+      </div>
 
-          <div className="relative h-[220px] lg:h-[280px] hidden lg:flex items-center justify-center">
-            <div className="absolute w-[280px] h-[280px] rounded-full animate-glowpulse" style={{ background: "radial-gradient(circle,rgba(139,92,246,.4),rgba(91,155,232,.14) 55%,transparent 68%)", filter: "blur(18px)" }} />
-            <Robot v="b" className="w-[220px] h-auto relative z-[2] animate-floaty" />
-          </div>
-        </div>
-
-        <div className="order-2">
-          <form onSubmit={handleStart}>
-            <Card className="p-[22px] sm:p-[26px]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[18px] mb-[18px]">
-                <div>
-                  <div className={labelClass}>TARGET ROLE</div>
-                  <select value={role} onChange={(e) => setRole(e.target.value)} className={fieldClass}>
-                    <option>Full Stack Developer</option>
-                    <option>Frontend Developer</option>
-                    <option>Backend Developer</option>
-                    <option>Python Developer</option>
-                  </select>
-                </div>
-                <div>
-                  <div className={labelClass}>CORE SKILLS FOCUS</div>
-                  <SkillTagInput value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} placeholder="type" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[18px] mb-6">
-                <div>
-                  <div className={labelClass}>EXPERIENCE</div>
-                  <select value={experience} onChange={(e) => setExperience(e.target.value)} className={fieldClass}>
-                    <option>Fresher</option>
-                    <option>1–2 Years</option>
-                    <option>3+ Years</option>
-                  </select>
-                </div>
-                <div>
-                  <div className={labelClass}>DIFFICULTY</div>
-                  <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={fieldClass}>
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                  </select>
-                </div>
-                <div>
-                  <div className={labelClass}>TARGET COMPANY</div>
-                  <AutocompleteInput value={company} onChange={setCompany} suggestions={COMPANY_SUGGESTIONS} placeholder="type" />
-                </div>
-              </div>
-
-              <div className="border-t border-white/[.07] pt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <span className="flex items-center gap-2.5 text-[12px] text-[#8a8a97]">
-                  <span className="w-[7px] h-[7px] rounded-full bg-good" />questions ready to stream
-                </span>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full sm:w-auto border-0 text-white px-[26px] py-[13px] rounded-xl text-[14px] font-semibold disabled:opacity-60"
-                  style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)", boxShadow: "0 10px 28px rgba(124,58,237,.36)" }}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+        <form onSubmit={handleStart} className="min-w-0">
+          <div className="p-6 sm:p-8 rounded-[4px] border border-[#494454] flex flex-col gap-8" style={glassPanel}>
+            <div>
+              <FieldLabel>{"// target_role"}</FieldLabel>
+              <div className="relative">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full appearance-none bg-transparent border-0 border-b border-[#494454] focus:border-[#d0bcff] outline-none text-[#e4e1e8] font-display text-[20px] sm:text-[24px] px-0 py-3 pr-8 cursor-pointer transition-colors"
                 >
-                  {submitting ? "Starting…" : "Start interview →"}
-                </button>
+                  {ROLES.map((r) => (
+                    <option key={r} value={r} className="bg-[#1f1f24] text-[#e4e1e8]">{r}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-5 h-5 text-[#958ea0] absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
-            </Card>
-          </form>
+            </div>
+
+            <div>
+              <FieldLabel>{"// core_skills (multi-select)"}</FieldLabel>
+              <SkillTagField value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-[11px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase">{"// exp_level"}</label>
+                  <span className="font-display text-[13px] tracking-[.05em] text-[#d0bcff]">
+                    {EXPERIENCE_TIERS[experienceIndex].label.toUpperCase()} [L{experienceIndex + 1}]
+                  </span>
+                </div>
+                <div className="flex gap-1.5 h-3.5 mb-3">
+                  {EXPERIENCE_TIERS.map((t, i) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setExperience(t.value)}
+                      aria-label={t.value}
+                      className="flex-1 transition-all duration-200 hover:brightness-125 hover:scale-y-125 cursor-pointer"
+                      style={{ background: i <= experienceIndex ? "#d0bcff" : "#494454" }}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between text-[10px] tracking-[.1em] uppercase text-[#6f6f7c]">
+                  {EXPERIENCE_TIERS.map((t) => (
+                    <span key={t.value}>{t.label}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <FieldLabel>{"// complexity_index"}</FieldLabel>
+                <div className="grid grid-cols-3 gap-2">
+                  {COMPLEXITY.map((c) => {
+                    const active = difficulty === c.value;
+                    return (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setDifficulty(c.value)}
+                        className={`py-3 text-[11px] font-bold tracking-[.1em] uppercase transition-all duration-200 hover:scale-[1.03] border cursor-pointer ${
+                          active ? "border-[#d0bcff] text-[#d0bcff]" : "border-[#494454] text-[#958ea0] hover:border-[#6f6f7c]"
+                        }`}
+                        style={active ? { background: "rgba(208,188,255,.1)", boxShadow: "0 0 12px 0 rgba(208,188,255,.15)" } : undefined}
+                      >
+                        {c.tier}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <FieldLabel>{"// target_company (optional)"}</FieldLabel>
+              <CompanyField value={company} onChange={setCompany} suggestions={COMPANY_SUGGESTIONS} />
+            </div>
+
+            <div className="pt-2 border-t border-[#494454] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <span className="flex items-center gap-2.5 text-[12px] text-[#958ea0]">
+                <span className="w-[7px] h-[7px] rounded-full bg-emerald-400 animate-pulse" />
+                questions ready to stream
+              </span>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full sm:w-auto bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 px-8 hover:bg-[#e9ddff] hover:scale-[1.03] transition-all duration-200 disabled:opacity-60 disabled:hover:scale-100 cursor-pointer"
+                style={ctaStyle}
+              >
+                {submitting ? "starting…" : "initiate_sequence »"}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div className="hidden lg:flex flex-col gap-6 sticky top-8">
+          <div className="p-5 rounded-[4px] border border-[#494454]" style={glassPanel}>
+            <h3 className="text-[11px] font-bold tracking-[.2em] text-[#e4e1e8] uppercase mb-5 flex items-center gap-2">
+              <Workflow className="w-3.5 h-3.5 text-[#d0bcff]" /> {"// operation_workflow"}
+            </h3>
+            <div className="space-y-4">
+              <WorkflowItem done label="parameter_verification" desc="Config bounds checked." />
+              <WorkflowItem label="model_instantiation" desc="Pending init sequence." />
+              <WorkflowItem dim label="stream_link_est" desc="Awaiting model readiness." />
+            </div>
+          </div>
+
+          <div className="p-5 rounded-[4px] border border-[#494454]" style={glassPanel}>
+            <h3 className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4 flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5" /> {"// system_logs"}
+            </h3>
+            <div className="space-y-2 text-[11px] leading-relaxed text-[#958ea0]">
+              <p><span className="text-[#d0bcff]/70">[sys]</span> profile verified.</p>
+              <p><span className="text-[#d0bcff]/70">[sys]</span> awaiting configuration parameters.</p>
+              <p><span className="text-[#a3c9ff]/70">[cfg]</span> role set: &apos;{role}&apos;</p>
+              <p><span className="text-[#a3c9ff]/70">[cfg]</span> complexity index: {complexity.tier} ({complexity.label})</p>
+              <p className="text-[#d0bcff] flex items-center gap-1.5 pt-1">
+                <span className="w-1.5 h-1.5 bg-[#d0bcff] animate-blockcaret flex-none" />
+                standing by for manual initiation...
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="text-[11px] text-purple tracking-[.8px] uppercase mb-[14px]">// how your session works</div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-8">
-        {STEPS.map((s) => (
-          <Card key={s.n} className="p-5">
-            <span className="w-7 h-7 rounded-[9px] flex items-center justify-center font-extrabold text-[13px] text-purple-light mb-3" style={{ background: "rgba(139,92,246,.16)" }}>{s.n}</span>
-            <div className="font-semibold text-[13.5px] mb-1.5">{s.t}</div>
-            <div className="text-[12px] text-[#8a8a97] leading-[1.6]">{s.d}</div>
-          </Card>
-        ))}
+      <div>
+        <div className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// how your session works"}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {STEPS.map((s) => (
+            <div key={s.n} className="p-5 rounded-[4px] border border-[#494454]" style={glassPanel}>
+              <span className="w-7 h-7 flex items-center justify-center font-display text-[13px] text-[#d0bcff] mb-3 border border-[#494454]">{s.n}</span>
+              <div className="font-bold text-[13.5px] text-[#e4e1e8] mb-1.5">{s.t}</div>
+              <div className="text-[12px] text-[#958ea0] leading-[1.6]">{s.d}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="text-[11px] text-purple tracking-[.8px] uppercase mb-[14px]">// quick presets — one tap to launch</div>
-      <div className="flex flex-wrap gap-2.5">
-        {PRESETS.map((p) => {
-          const isLaunching = launchingPreset === p.role;
-          return (
-            <button
-              key={p.role}
-              type="button"
-              disabled={submitting || !!launchingPreset}
-              onClick={() => handlePresetLaunch(p)}
-              className="flex items-center gap-2 bg-panel border border-white/[.07] px-4 py-3 rounded-xl text-[12.5px] text-[#e6e6ec] disabled:opacity-60"
-            >
-              {isLaunching ? (
-                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-purple-light rounded-full animate-spin" />
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.dot }} />
-              )}
-              <span className="font-semibold">{p.role}</span>
-              <span className="text-[9.5px] px-[7px] py-0.5 rounded-md bg-field text-[#9090a0] uppercase tracking-[.4px]">{p.difficulty}</span>
-            </button>
-          );
-        })}
+      <div>
+        <div className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// quick presets — one tap to launch"}</div>
+        <div className="flex flex-wrap gap-3">
+          {PRESETS.map((p) => {
+            const isLaunching = launchingPreset === p.role;
+            return (
+              <button
+                key={p.role}
+                type="button"
+                disabled={submitting || !!launchingPreset}
+                onClick={() => handlePresetLaunch(p)}
+                className="flex items-center gap-2.5 border border-[#494454] bg-[#1f1f24] px-4 py-3 rounded-[4px] text-[12.5px] text-[#e4e1e8] disabled:opacity-60 disabled:hover:scale-100 hover:border-[#6f6f7c] hover:bg-[#2a292e] hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+              >
+                {isLaunching ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-[#d0bcff] rounded-full animate-spin" />
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.dot }} />
+                )}
+                <span className="font-bold">{p.role}</span>
+                <span className="text-[9.5px] px-[7px] py-0.5 border border-[#494454] text-[#958ea0] uppercase tracking-[.4px]">{p.difficulty}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

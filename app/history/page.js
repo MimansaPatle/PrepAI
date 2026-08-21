@@ -1,15 +1,16 @@
-import Navbar from "@/components/Navbar";
+import DashboardSidebar from "@/components/DashboardSidebar";
 import HistoryView from "@/components/HistoryView";
-import Footer from "@/components/Footer";
 
 export default function HistoryPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="flex-1 w-full px-5 sm:px-8 lg:px-14 xl:px-20 pt-[34px] pb-14">
-        <HistoryView />
-      </main>
-      <Footer />
+    <div className="relative flex flex-col lg:flex-row min-h-screen" style={{ background: "#131317" }}>
+      <div className="dot-grid-terminal fixed inset-0 pointer-events-none" />
+      <DashboardSidebar />
+      <div className="relative flex-1 min-w-0 flex flex-col">
+        <main className="flex-1 w-full max-w-[1440px] mx-auto px-6 py-8 sm:py-12 lg:pl-12">
+          <HistoryView />
+        </main>
+      </div>
     </div>
   );
 }

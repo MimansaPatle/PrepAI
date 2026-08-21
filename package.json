@@ -12,6 +12,7 @@
     "@auth/mongodb-adapter": "^3.11.2",
     "@google/genai": "^2.11.0",
     "bcryptjs": "^3.0.3",
+    "framer-motion": "^13.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.24.0",
@@ -27,6 +28,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "playwright": "^1.62.1",
     "tailwindcss": "^4"
   }
 }

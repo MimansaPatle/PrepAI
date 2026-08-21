@@ -1,19 +1,56 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import { Play, History, User, ChevronRight, Target, Star, RotateCcw } from "lucide-react";
-import { Robot, Card, Label } from "@/components/ui/Brand";
+import { ArrowUp, ArrowDown, ArrowRight, Zap, BarChart3 } from "lucide-react";
 import DashboardSkeleton from "./DashboardSkeleton";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const METRIC_META = {
-  communication: { label: "Communication", color: "#5b9be8" },
-  technicalKnowledge: { label: "Technical knowledge", color: "#8b5cf6" },
-  confidence: { label: "Confidence", color: "#a78bfa" },
-  problemSolving: { label: "Problem solving", color: "#34d399" },
+  communication: { label: "communication" },
+  technicalKnowledge: { label: "technical knowledge" },
+  confidence: { label: "confidence" },
+  problemSolving: { label: "problem solving" },
 };
+
+const QUICK_DRILLS = [
+  { tag: "star", tagColor: "#d0bcff", title: "behavioral: conflict & failure", meta: "6q · 5m", difficulty: "Easy", skills: "" },
+  { tag: "tech", tagColor: "#a3c9ff", title: "system design: rate limiter", meta: "4q · 12m", role: "Backend Developer", difficulty: "Hard", skills: "System Design" },
+  { tag: "write", tagColor: "#c6c6c7", title: "concise answers under 150 words", meta: "8q · 10m", difficulty: "Medium", skills: "" },
+];
+
+const glassPanel = { background: "#1f1f24" };
+const ctaStyle = { boxShadow: "0 0 20px 0 rgba(208,188,255,.2)" };
+
+function SegmentedBar({ value, color }) {
+  const total = 10;
+  const active = Math.round((value / 100) * total);
+  return (
+    <div className="flex gap-[2px] h-2 w-full">
+      {Array.from({ length: total }).map((_, i) => (
+        <span key={i} className="flex-1" style={{ background: i < active ? color : "#494454" }} />
+      ))}
+    </div>
+  );
+}
+
+function StatCard({ label, glowColor, children }) {
+  return (
+    <div className="relative overflow-hidden p-6 rounded-[4px] border border-[#494454] group" style={glassPanel}>
+      <div
+        className="absolute -inset-4 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+        style={{ background: `${glowColor}0d` }}
+      />
+      <div className="relative z-10">
+        <span className="text-[12px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase mb-4 block">{label}</span>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [dashboardData, setDashboardData] = useState(null);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
@@ -21,9 +58,13 @@ export default function Dashboard() {
   const [loadingInterview, setLoadingInterview] = useState(true);
   const [allInterviews, setAllInterviews] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [startingRecommended, setStartingRecommended] = useState(false);
+  const [launchingDrill, setLaunchingDrill] = useState(null);
   const isPageLoading = loadingDashboard || loadingInterview || loadingHistory;
 
-  const userName = dashboardData?.user?.name || "User";
+  const fullName = dashboardData?.user?.name || "user";
+  const firstNameLower = fullName.split(" ")[0].toLowerCase();
+  const firstName = firstNameLower.charAt(0).toUpperCase() + firstNameLower.slice(1);
 
   useEffect(() => {
     async function loadCurrentInterview() {
@@ -70,41 +111,27 @@ export default function Dashboard() {
     loadHistory();
   }, []);
 
-  const recentInterviews = allInterviews.slice(0, 4);
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Morning";
+    if (h < 18) return "Afternoon";
+    return "Evening";
+  }, []);
 
   const weekChart = useMemo(() => {
-    const days = ["M", "T", "W", "T", "F", "S", "S"];
     const now = new Date();
     const dayOfWeek = (now.getDay() + 6) % 7; // Monday = 0
     const monday = new Date(now);
     monday.setHours(0, 0, 0, 0);
     monday.setDate(now.getDate() - dayOfWeek);
 
-    const counts = days.map((label, i) => {
-      const dayStart = new Date(monday);
-      dayStart.setDate(monday.getDate() + i);
-      const dayEnd = new Date(dayStart);
-      dayEnd.setDate(dayStart.getDate() + 1);
-
-      const count = allInterviews.filter((iv) => {
-        if (!iv.completedAt) return false;
-        const d = new Date(iv.completedAt);
-        return d >= dayStart && d < dayEnd;
-      }).length;
-
-      return { label, count };
-    });
-
-    const max = Math.max(1, ...counts.map((c) => c.count));
-    const total = counts.reduce((a, c) => a + c.count, 0);
-    return { counts, max, total };
+    const total = allInterviews.filter((iv) => iv.completedAt && new Date(iv.completedAt) >= monday).length;
+    return { total };
   }, [allInterviews]);
 
   const streak = useMemo(() => {
     const daySet = new Set(
-      allInterviews
-        .filter((iv) => iv.completedAt)
-        .map((iv) => new Date(iv.completedAt).toDateString())
+      allInterviews.filter((iv) => iv.completedAt).map((iv) => new Date(iv.completedAt).toDateString())
     );
 
     let count = 0;
@@ -123,6 +150,14 @@ export default function Dashboard() {
     return count;
   }, [allInterviews]);
 
+  const scoreTrend = useMemo(() => {
+    const scored = allInterviews.filter((iv) => typeof iv.feedback?.score === "number");
+    if (scored.length < 2) return null;
+    const latest = scored[0].feedback.score;
+    const restAvg = scored.slice(1).reduce((a, b) => a + b.feedback.score, 0) / (scored.length - 1);
+    return Math.round(latest - restAvg);
+  }, [allInterviews]);
+
   const metricsAgg = useMemo(() => {
     const sums = { communication: 0, technicalKnowledge: 0, confidence: 0, problemSolving: 0 };
     let n = 0;
@@ -138,227 +173,237 @@ export default function Dashboard() {
 
     if (n === 0) return [];
 
-    return Object.keys(sums)
-      .map((key) => ({
-        key,
-        label: METRIC_META[key].label,
-        color: METRIC_META[key].color,
-        pct: Math.round((sums[key] / n / 5) * 100),
-      }))
-      .sort((a, b) => a.pct - b.pct);
+    return Object.keys(sums).map((key) => ({
+      key,
+      label: METRIC_META[key].label,
+      pct: Math.round((sums[key] / n / 5) * 100),
+    }));
   }, [allInterviews]);
 
-  const recommendations = useMemo(() => {
-    const cards = [];
-
-    if (metricsAgg.length > 0) {
-      const weakest = metricsAgg[0];
-      cards.push({
-        icon: Target,
-        title: weakest.label,
-        tag: weakest.pct < 50 ? "Hard" : "Medium",
-        tint: "rgba(139,92,246,.14)",
-        color: "#a78bfa",
-        desc: "Your weakest competency — biggest score lift.",
-        action: () => router.push("/interview"),
-      });
-    }
-
-    if (dashboardData?.user?.favoriteRole) {
-      cards.push({
-        icon: Star,
-        title: dashboardData.user.favoriteRole,
-        tag: "Preferred",
-        tint: "rgba(52,211,153,.12)",
-        color: "#34d399",
-        desc: "Continue building on your strongest track.",
-        action: () => router.push("/interview"),
-      });
-    }
-
-    const scored = allInterviews.filter((iv) => typeof iv.feedback?.score === "number");
-    if (scored.length > 0) {
-      const lowest = [...scored].sort((a, b) => a.feedback.score - b.feedback.score)[0];
-      cards.push({
-        icon: RotateCcw,
-        title: lowest.role,
-        tag: lowest.difficulty,
-        tint: "rgba(248,113,113,.12)",
-        color: "#f87171",
-        desc: `Your lowest scoring session (${lowest.feedback.score}%) — retry it.`,
-        action: () => router.push("/interview"),
-      });
-    }
-
-    return cards.slice(0, 3);
-  }, [metricsAgg, dashboardData, allInterviews, router]);
+  const weakest = useMemo(() => {
+    if (metricsAgg.length === 0) return null;
+    return [...metricsAgg].sort((a, b) => a.pct - b.pct)[0];
+  }, [metricsAgg]);
 
   if (isPageLoading) return <DashboardSkeleton />;
 
-  const stats = [
-    { label: "OVERALL SCORE", value: `${dashboardData?.averageScore ?? 0}%`, color: "#34d399", size: "27px", sub: "average ai score", tint: "rgba(52,211,153,.14)", dot: "#34d399" },
-    { label: "INTERVIEWS", value: `${dashboardData?.interviewCount ?? 0}`, color: "#f2f2f5", size: "27px", sub: "completed", tint: "rgba(139,92,246,.14)", dot: "#a78bfa" },
-    { label: "STREAK", value: `${streak} day${streak === 1 ? "" : "s"}`, color: streak > 0 ? "#5b9be8" : "#f2f2f5", size: "24px", sub: "daily practice", tint: "rgba(91,155,232,.14)", dot: "#5b9be8" },
-    { label: "FAVORITE ROLE", value: dashboardData?.user?.favoriteRole || "—", color: "#f2f2f5", size: "18px", sub: "preferred", tint: "rgba(248,113,113,.14)", dot: "#f87171" },
-  ];
+  const goToInterview = () => router.push(currentInterview ? `/interviewsession?id=${currentInterview._id}` : "/interview");
 
-  const scoreColor = (score) => (score >= 80 ? "#34d399" : score >= 60 ? "#f2f2f5" : "#f87171");
+  const startRecommended = async () => {
+    if (currentInterview) {
+      router.push(`/interviewsession?id=${currentInterview._id}`);
+      return;
+    }
+
+    setStartingRecommended(true);
+    try {
+      const res = await fetch("/api/interview/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: dashboardData?.user?.favoriteRole || "Full Stack Developer",
+          experience: dashboardData?.user?.experience || "1–2 Years",
+          difficulty: "Medium",
+          skills: "",
+          company: "",
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        showToast?.({ title: "couldn't start interview", description: data.message || "please try again." });
+        setStartingRecommended(false);
+        return;
+      }
+
+      router.push(`/interviewsession?id=${data.interviewId}`);
+    } catch (err) {
+      console.error(err);
+      showToast?.({ title: "something went wrong", description: "please try again." });
+      setStartingRecommended(false);
+    }
+  };
+
+  const startDrill = async (drill) => {
+    if (startingRecommended || launchingDrill) return;
+
+    setLaunchingDrill(drill.tag);
+    try {
+      const res = await fetch("/api/interview/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: drill.role || dashboardData?.user?.favoriteRole || "Full Stack Developer",
+          experience: dashboardData?.user?.experience || "1–2 Years",
+          difficulty: drill.difficulty,
+          skills: drill.skills || "",
+          company: "",
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        showToast?.({ title: "couldn't start drill", description: data.message || "please try again." });
+        setLaunchingDrill(null);
+        return;
+      }
+
+      router.push(`/interviewsession?id=${data.interviewId}`);
+    } catch (err) {
+      console.error(err);
+      showToast?.({ title: "something went wrong", description: "please try again." });
+      setLaunchingDrill(null);
+    }
+  };
 
   return (
-    <div className="animate-rise">
-      <div className="flex items-center gap-4 mb-[26px]">
-        <Robot v="a" className="w-[60px] h-auto flex-none animate-bob" />
+    <div className="animate-rise flex flex-col gap-12">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="font-extrabold text-[26px] sm:text-[28px] mb-1 tracking-[-1px]">welcome back, <span className="text-purple-light">{userName}</span></h1>
-          <p className="text-[#8a8a97] text-[13px]">your prep modules are calibrated and ready.</p>
+          <span className="text-[12px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase mb-2 block">{"// welcome back"}</span>
+          <h2 className="font-display text-[42px] sm:text-[56px] lg:text-[64px] leading-[1.1] tracking-[-0.02em] text-[#e4e1e8] m-0">
+            {greeting}, {firstName}.
+          </h2>
+          <p className="text-[15px] sm:text-[18px] leading-[1.6] text-[#cbc3d7] mt-2">your prep modules are calibrated and ready.</p>
         </div>
-      </div>
+        <button
+          onClick={goToInterview}
+          className="bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 px-8 self-start md:self-auto hover:bg-[#e9ddff] hover:scale-[1.03] transition-all duration-200 shrink-0 cursor-pointer"
+          style={ctaStyle}
+        >
+          {"new interview >>"}
+        </button>
+      </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-7">
-        {stats.map((d) => (
-          <Card key={d.label} className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] text-[#7a7a87] tracking-[.6px]">{d.label}</span>
-              <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: d.tint }}>
-                <span className="w-2 h-2 rounded-[3px]" style={{ background: d.dot }} />
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label={"// overall score"} glowColor="#d0bcff">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-[32px] text-[#d0bcff]">{dashboardData?.averageScore ?? 0}</span>
+            <span className="text-[14px] text-[#cbc3d7]">{"/ 100"}</span>
+          </div>
+          <div className="mt-4">
+            {scoreTrend === null ? (
+              <span className="font-display text-[14px] tracking-[.05em] text-[#cbc3d7]">{"not enough data"}</span>
+            ) : (
+              <span className={`font-display text-[14px] tracking-[.05em] flex items-center gap-2 ${scoreTrend >= 0 ? "text-emerald-400" : "text-[#ffb4ab]"}`}>
+                {scoreTrend >= 0 ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                {`${scoreTrend >= 0 ? "+" : ""}${scoreTrend} this week`}
               </span>
-            </div>
-            <div className="font-extrabold leading-[1.05] truncate" style={{ fontSize: d.size, color: d.color }}>{d.value}</div>
-            <div className="text-[11px] text-[#6f6f7c] mt-2">{d.sub}</div>
-          </Card>
-        ))}
-      </div>
+            )}
+          </div>
+        </StatCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-[22px] mb-[22px]">
+        <StatCard label={"// interviews"} glowColor="#a3c9ff">
+          <span className="font-display text-[32px] text-[#e4e1e8]">{dashboardData?.interviewCount ?? 0}</span>
+          <div className="mt-4 font-display text-[14px] tracking-[.05em] text-[#cbc3d7]">{`${weekChart.total} this week`}</div>
+        </StatCard>
+
+        <StatCard label={"// streak"} glowColor="#c6c6c7">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-[32px] text-[#e4e1e8]">{streak}</span>
+            <span className="text-[14px] text-[#cbc3d7]">{streak === 1 ? "day" : "days"}</span>
+          </div>
+          <div className={`mt-4 font-display text-[14px] tracking-[.05em] flex items-center gap-2 ${streak > 0 ? "text-[#d0bcff]" : "text-[#cbc3d7]"}`}>
+            <span className={`w-1.5 h-1.5 rounded-full flex-none ${streak > 0 ? "bg-[#d0bcff] animate-pulse" : "bg-[#494454]"}`} />
+            {streak > 0 ? "active" : "inactive"}
+          </div>
+        </StatCard>
+
+        <StatCard label={"// weak spot"} glowColor="#ffb4ab">
+          <span className="font-display text-[24px] leading-tight text-[#ffb4ab] lowercase block truncate">{weakest ? weakest.label : "—"}</span>
+          <div className="mt-4 font-display text-[14px] tracking-[.05em] text-[#cbc3d7]">{weakest ? `${weakest.pct} / 100` : "not enough data"}</div>
+        </StatCard>
+      </section>
+
+      <section className="relative overflow-hidden p-8 rounded-[8px] border border-[#d0bcff]/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6" style={glassPanel}>
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, rgba(208,188,255,.1), transparent)" }} />
+        <div className="relative z-10 min-w-0">
+          <span className="text-[12px] font-bold tracking-[.2em] text-[#d0bcff] uppercase mb-2 block">
+            {`// behavioral · ${(dashboardData?.user?.favoriteRole || "software engineer").toLowerCase()}`}
+          </span>
+          <h3 className="font-display text-[26px] sm:text-[32px] text-[#e4e1e8] lowercase m-0">
+            {currentInterview ? "continue your interview" : "full mock interview"}
+          </h3>
+          <p className="text-[14px] text-[#cbc3d7] mt-2">
+            {currentInterview
+              ? "pick up right where you left off."
+              : weakest
+              ? `get scored on content, structure & clarity — targets your ${weakest.label} score.`
+              : "get scored on communication, technical knowledge, confidence & problem solving."}
+          </p>
+        </div>
+        <button
+          onClick={startRecommended}
+          disabled={startingRecommended || !!launchingDrill}
+          className="relative z-10 bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 px-8 hover:bg-[#e9ddff] hover:scale-[1.03] transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-default"
+          style={ctaStyle}
+        >
+          {startingRecommended ? "starting…" : currentInterview ? "continue >>" : "start >>"}
+        </button>
+      </section>
+
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
-          <Label>// quick actions</Label>
-          <button
-            onClick={() => router.push(currentInterview ? `/interviewsession?id=${currentInterview._id}` : "/interview")}
-            className="flex items-center gap-3.5 w-full text-left border-0 text-white p-[17px] rounded-[15px] cursor-pointer mb-[11px]"
-            style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)", boxShadow: "0 10px 28px rgba(124,58,237,.3)" }}
-          >
-            <span className="w-[38px] h-[38px] rounded-[11px] bg-white/[.18] flex items-center justify-center flex-none">
-              <Play className="w-4 h-4 text-white fill-white" />
-            </span>
-            <span className="flex-1">
-              <span className="block font-semibold text-[14px]">{currentInterview ? "Continue interview" : "Start new interview"}</span>
-              <span className="block text-[11.5px] text-white/70">{currentInterview ? "Resume your unfinished session" : "Initialize simulator workspace"}</span>
-            </span>
-            <span className="text-white/70">→</span>
-          </button>
-
-          <button onClick={() => router.push("/history")} className="flex items-center gap-3.5 w-full text-left bg-panel border border-white/[.07] text-[#f2f2f5] p-[17px] rounded-[15px] cursor-pointer mb-[11px]">
-            <span className="w-[38px] h-[38px] rounded-[11px] bg-field flex items-center justify-center flex-none text-purple-light"><History className="w-4 h-4" /></span>
-            <span className="flex-1">
-              <span className="block font-semibold text-[14px]">Interview history</span>
-              <span className="block text-[11.5px] text-[#8a8a97]">Review past records</span>
-            </span>
-            <ChevronRight className="w-4 h-4 text-[#6f6f7c]" />
-          </button>
-
-          <button onClick={() => router.push("/profile")} className="flex items-center gap-3.5 w-full text-left bg-panel border border-white/[.07] text-[#f2f2f5] p-[17px] rounded-[15px] cursor-pointer mb-[11px]">
-            <span className="w-[38px] h-[38px] rounded-[11px] bg-field flex items-center justify-center flex-none text-[#5b9be8]"><User className="w-4 h-4" /></span>
-            <span className="flex-1">
-              <span className="block font-semibold text-[14px]">Your profile</span>
-              <span className="block text-[11.5px] text-[#8a8a97]">Calibrate targets</span>
-            </span>
-            <ChevronRight className="w-4 h-4 text-[#6f6f7c]" />
-          </button>
-
-          <Card className="p-[18px]">
-            <div className="flex items-center justify-between mb-3.5">
-              <span className="text-[10px] text-[#7a7a87] tracking-[.6px]">THIS WEEK</span>
-              <span className="text-[11px] text-good">{weekChart.total} session{weekChart.total === 1 ? "" : "s"}</span>
-            </div>
-            <div className="flex items-end gap-2 h-[70px]">
-              {weekChart.counts.map((c, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                  <div
-                    className="w-full rounded-[6px]"
-                    style={{
-                      height: `${Math.max(10, (c.count / weekChart.max) * 100)}%`,
-                      background: c.count > 0 ? "linear-gradient(180deg,#8b5cf6,#5b9be8)" : "rgba(255,255,255,.06)",
-                    }}
-                  />
-                  <span className="text-[10px] text-[#7a7a87]">{c.label}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <h4 className="text-[12px] font-bold tracking-[.2em] text-[#e4e1e8] uppercase mb-6 flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            {"// quick drills"}
+          </h4>
+          <div className="space-y-4">
+            {QUICK_DRILLS.map((d) => {
+              const isLaunching = launchingDrill === d.tag;
+              return (
+                <button
+                  key={d.tag}
+                  onClick={() => startDrill(d)}
+                  disabled={!!launchingDrill || startingRecommended}
+                  className="w-full text-left p-4 rounded-[4px] border border-[#494454] bg-[#1f1f24] flex items-center justify-between gap-4 hover:bg-[#2a292e] hover:border-[#6f6f7c] hover:scale-[1.01] transition-all duration-200 group cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-default"
+                >
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className="border border-[#494454] px-2 py-1 font-display text-[10px] uppercase flex-none" style={{ color: d.tagColor }}>
+                      {d.tag}
+                    </span>
+                    <span className="text-[14px] text-[#e4e1e8] truncate">{d.title}</span>
+                  </div>
+                  <div className="flex items-center gap-4 font-display text-[14px] tracking-[.05em] text-[#cbc3d7] group-hover:text-[#d0bcff] transition-colors flex-none">
+                    <span>{isLaunching ? "starting…" : d.meta}</span>
+                    {isLaunching ? (
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-[#d0bcff] rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRight className="w-4 h-4" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>
-          <Label>// recent interviews</Label>
-          {recentInterviews.length === 0 ? (
-            <Card className="p-6 text-center text-[#7a7a87] text-[13px]">No interviews completed yet.</Card>
-          ) : (
-            recentInterviews.map((r, idx) => (
-              <div
-                key={r._id}
-                onClick={() => router.push(`/feedback?id=${r._id}`)}
-                className="flex items-center gap-3.5 bg-panel border border-white/[.07] rounded-[15px] px-[18px] py-[15px] mb-[11px] cursor-pointer"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-[5px] flex-wrap">
-                    <span className="font-semibold text-[13.5px]">{r.role}</span>
-                    <span className="text-[9.5px] px-[7px] py-0.5 rounded-md bg-field text-[#9090a0] uppercase tracking-[.4px]">{r.difficulty}</span>
-                    {idx === 0 && <span className="text-[9.5px] px-[7px] py-0.5 rounded-md" style={{ background: "rgba(139,92,246,.16)", color: "#c4b5fd" }}>latest</span>}
-                  </div>
-                  <div className="text-[11.5px] text-[#6f6f7c]">
-                    completed {new Date(r.completedAt).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[9px] text-[#6f6f7c] tracking-[.4px]">AI SCORE</div>
-                  <div className="font-extrabold text-[19px]" style={{ color: scoreColor(r.feedback?.score ?? 0) }}>{r.feedback?.score ?? "--"}%</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {(recommendations.length > 0 || metricsAgg.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_.65fr] gap-[18px]">
-          {recommendations.length > 0 && (
-            <div>
-              <Label>// recommended next</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {recommendations.map((r, i) => (
-                  <Card key={i} className="p-[18px] cursor-pointer" onClick={r.action}>
-                    <span className="w-8 h-8 rounded-[10px] flex items-center justify-center mb-3" style={{ background: r.tint, color: r.color }}><r.icon className="w-4 h-4" /></span>
-                    <div className="font-semibold text-[13px] mb-0.5 truncate">{r.title}</div>
-                    <div className="text-[9.5px] uppercase tracking-[.4px] text-[#7a7a87] mb-2">{r.tag}</div>
-                    <div className="text-[11px] text-[#8a8a97] leading-[1.5]">{r.desc}</div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {metricsAgg.length > 0 && (
-            <div>
-              <Label>// skills to sharpen</Label>
-              <Card className="p-[18px]">
-                {metricsAgg.map((m) => (
-                  <div key={m.key} className="mb-3.5 last:mb-0">
-                    <div className="flex justify-between text-[12px] mb-1.5">
-                      <span className="text-[#c4c4cf]">{m.label}</span>
-                      <span className="font-semibold" style={{ color: m.color }}>{m.pct}%</span>
+          <h4 className="text-[12px] font-bold tracking-[.2em] text-[#e4e1e8] uppercase mb-6 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            {"// score by skill"}
+          </h4>
+          <div className="p-6 rounded-[4px] border border-[#494454] space-y-8" style={glassPanel}>
+            {metricsAgg.length === 0 ? (
+              <div className="text-[14px] text-[#cbc3d7] py-4 text-center">complete an interview to see your skill breakdown.</div>
+            ) : (
+              metricsAgg.map((m) => {
+                const isWeak = weakest?.key === m.key;
+                const color = isWeak ? "#ffb4ab" : m.pct >= 80 ? "#34d399" : "#d0bcff";
+                return (
+                  <div key={m.key}>
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-[14px] text-[#e4e1e8]">{m.label}</span>
+                      <span className="font-display text-[14px] tracking-[.05em]" style={{ color }}>{m.pct}</span>
                     </div>
-                    <div className="h-1.5 bg-field rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${m.pct}%`, background: m.color }} />
-                    </div>
+                    <SegmentedBar value={m.pct} color={color} />
                   </div>
-                ))}
-                <div className="text-[10.5px] text-[#6f6f7c] mt-3.5 pt-3.5 border-t border-white/[.06] leading-[1.5]">
-                  Practicing {metricsAgg[0].label.toLowerCase()} lifts your overall readiness the fastest.
-                </div>
-              </Card>
-            </div>
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
-      )}
+      </section>
     </div>
   );
 }
