@@ -266,13 +266,6 @@ export default function Dashboard() {
           </h2>
           <p className="text-[15px] sm:text-[18px] leading-[1.6] text-[#cbc3d7] mt-2">your prep modules are calibrated and ready.</p>
         </div>
-        <button
-          onClick={goToInterview}
-          className="bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 px-8 self-start md:self-auto hover:bg-[#e9ddff] hover:scale-[1.03] transition-all duration-200 shrink-0 cursor-pointer"
-          style={ctaStyle}
-        >
-          {"new interview >>"}
-        </button>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
