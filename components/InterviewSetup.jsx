@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, X, Workflow, Terminal, Square, SquareCheck } from "lucide-react";
 import { SKILL_SUGGESTIONS, COMPANY_SUGGESTIONS } from "@/components/ui/Brand";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const ROLES = ["Full Stack Developer", "Frontend Developer", "Backend Developer", "Python Developer"];
 
@@ -25,7 +26,7 @@ const PRESETS = [
 ];
 
 const STEPS = [
-  { n: "1", t: "Configure", d: "Pick your role, skills, difficulty and target company. The engine tailors every question." },
+  { n: "1", t: "Set up", d: "Pick your role, skills, difficulty and target company. We tailor every question to you." },
   { n: "2", t: "Answer live", d: "Respond to timed prompts by voice or text while your coach tracks structure and depth." },
   { n: "3", t: "Get your report", d: "Receive a scored breakdown, strengths, gaps and a personalized 2-week roadmap." },
 ];
@@ -174,6 +175,7 @@ export default function InterviewSetup() {
   const [launchingPreset, setLaunchingPreset] = useState(null);
 
   const router = useRouter();
+  const { showToast } = useToast();
 
   const experienceIndex = Math.max(0, EXPERIENCE_TIERS.findIndex((t) => t.value === experience));
   const complexity = COMPLEXITY.find((c) => c.value === difficulty) || COMPLEXITY[1];
@@ -197,7 +199,7 @@ export default function InterviewSetup() {
       const data = await response.json();
 
       if (!data.success) {
-        alert(data.message);
+        showToast?.({ title: "couldn't start interview", description: data.message || "please try again.", type: "error" });
         return false;
       }
 
@@ -205,7 +207,7 @@ export default function InterviewSetup() {
       return true;
     } catch (error) {
       console.error(error);
-      alert("Something went wrong.");
+      showToast?.({ title: "something went wrong", description: "please try again.", type: "error" });
       return false;
     }
   };
@@ -230,10 +232,10 @@ export default function InterviewSetup() {
     <div className="animate-rise flex flex-col gap-10">
       <div>
         <h1 className="font-display text-[28px] sm:text-[36px] text-[#e4e1e8] uppercase tracking-[.05em] flex items-center gap-3 m-0">
-          {"// session_config"} <span className="inline-block w-3 h-3 sm:w-3.5 sm:h-3.5 bg-[#d0bcff] animate-blockcaret" />
+          {"// Start new interview "} <span className="inline-block w-3 h-3 sm:w-3.5 sm:h-3.5 bg-[#d0bcff] animate-blockcaret" />
         </h1>
         <p className="text-[14px] sm:text-[15px] leading-[1.7] text-[#cbc3d7] mt-3 max-w-2xl">
-          Configure parameters for your interview simulation. Role, skills, experience and complexity all tune the questions the engine streams to you.
+          Choose your role, skills, experience and difficulty we will tailor the interview questions to match.
         </p>
       </div>
 
@@ -241,7 +243,7 @@ export default function InterviewSetup() {
         <form onSubmit={handleStart} className="min-w-0">
           <div className="p-6 sm:p-8 rounded-[4px] border border-[#494454] flex flex-col gap-8" style={glassPanel}>
             <div>
-              <FieldLabel>{"// target_role"}</FieldLabel>
+              <FieldLabel>{"// role"}</FieldLabel>
               <div className="relative">
                 <select
                   value={role}
@@ -257,16 +259,16 @@ export default function InterviewSetup() {
             </div>
 
             <div>
-              <FieldLabel>{"// core_skills (multi-select)"}</FieldLabel>
+              <FieldLabel>{"// skills (pick a few)"}</FieldLabel>
               <SkillTagField value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-[11px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase">{"// exp_level"}</label>
+                  <label className="text-[11px] font-bold tracking-[.2em] text-[#cbc3d7] uppercase">{"// experience level"}</label>
                   <span className="font-display text-[13px] tracking-[.05em] text-[#d0bcff]">
-                    {EXPERIENCE_TIERS[experienceIndex].label.toUpperCase()} [L{experienceIndex + 1}]
+                    {EXPERIENCE_TIERS[experienceIndex].label.toUpperCase()}
                   </span>
                 </div>
                 <div className="flex gap-1.5 h-3.5 mb-3">
@@ -289,7 +291,7 @@ export default function InterviewSetup() {
               </div>
 
               <div>
-                <FieldLabel>{"// complexity_index"}</FieldLabel>
+                <FieldLabel>{"// difficulty"}</FieldLabel>
                 <div className="grid grid-cols-3 gap-2">
                   {COMPLEXITY.map((c) => {
                     const active = difficulty === c.value;
@@ -303,7 +305,7 @@ export default function InterviewSetup() {
                         }`}
                         style={active ? { background: "rgba(208,188,255,.1)", boxShadow: "0 0 12px 0 rgba(208,188,255,.15)" } : undefined}
                       >
-                        {c.tier}
+                        {c.value}
                       </button>
                     );
                   })}
@@ -312,14 +314,14 @@ export default function InterviewSetup() {
             </div>
 
             <div>
-              <FieldLabel>{"// target_company (optional)"}</FieldLabel>
+              <FieldLabel>{"// target company (optional)"}</FieldLabel>
               <CompanyField value={company} onChange={setCompany} suggestions={COMPANY_SUGGESTIONS} />
             </div>
 
             <div className="pt-2 border-t border-[#494454] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <span className="flex items-center gap-2.5 text-[12px] text-[#958ea0]">
                 <span className="w-[7px] h-[7px] rounded-full bg-emerald-400 animate-pulse" />
-                questions ready to stream
+                ready to start
               </span>
               <button
                 type="submit"
@@ -327,7 +329,7 @@ export default function InterviewSetup() {
                 className="w-full sm:w-auto bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 px-8 hover:bg-[#e9ddff] hover:scale-[1.03] transition-all duration-200 disabled:opacity-60 disabled:hover:scale-100 cursor-pointer"
                 style={ctaStyle}
               >
-                {submitting ? "starting…" : "initiate_sequence »"}
+                {submitting ? "starting…" : "start interview »"}
               </button>
             </div>
           </div>
@@ -336,27 +338,27 @@ export default function InterviewSetup() {
         <div className="hidden lg:flex flex-col gap-6 sticky top-8">
           <div className="p-5 rounded-[4px] border border-[#494454]" style={glassPanel}>
             <h3 className="text-[11px] font-bold tracking-[.2em] text-[#e4e1e8] uppercase mb-5 flex items-center gap-2">
-              <Workflow className="w-3.5 h-3.5 text-[#d0bcff]" /> {"// operation_workflow"}
+              <Workflow className="w-3.5 h-3.5 text-[#d0bcff]" /> {"// how it works"}
             </h3>
             <div className="space-y-4">
-              <WorkflowItem done label="parameter_verification" desc="Config bounds checked." />
-              <WorkflowItem label="model_instantiation" desc="Pending init sequence." />
-              <WorkflowItem dim label="stream_link_est" desc="Awaiting model readiness." />
+              <WorkflowItem done label="setup checked" desc="Your choices look good." />
+              <WorkflowItem label="ai warming up" desc="Getting your interviewer ready." />
+              <WorkflowItem dim label="connecting" desc="Waiting for the AI to be ready." />
             </div>
           </div>
 
           <div className="p-5 rounded-[4px] border border-[#494454]" style={glassPanel}>
             <h3 className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4 flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5" /> {"// system_logs"}
+              <Terminal className="w-3.5 h-3.5" /> {"// status"}
             </h3>
             <div className="space-y-2 text-[11px] leading-relaxed text-[#958ea0]">
-              <p><span className="text-[#d0bcff]/70">[sys]</span> profile verified.</p>
-              <p><span className="text-[#d0bcff]/70">[sys]</span> awaiting configuration parameters.</p>
-              <p><span className="text-[#a3c9ff]/70">[cfg]</span> role set: &apos;{role}&apos;</p>
-              <p><span className="text-[#a3c9ff]/70">[cfg]</span> complexity index: {complexity.tier} ({complexity.label})</p>
+              <p><span className="text-[#d0bcff]/70">[ok]</span> your profile is ready.</p>
+              <p><span className="text-[#d0bcff]/70">[ok]</span> waiting for your choices.</p>
+              <p><span className="text-[#a3c9ff]/70">[set]</span> role: &apos;{role}&apos;</p>
+              <p><span className="text-[#a3c9ff]/70">[set]</span> difficulty: {complexity.value}</p>
               <p className="text-[#d0bcff] flex items-center gap-1.5 pt-1">
                 <span className="w-1.5 h-1.5 bg-[#d0bcff] animate-blockcaret flex-none" />
-                standing by for manual initiation...
+                ready when you are — click start below.
               </p>
             </div>
           </div>

@@ -13,9 +13,9 @@ const METRIC_META = {
 };
 
 const QUICK_DRILLS = [
-  { tag: "star", tagColor: "#d0bcff", title: "behavioral: conflict & failure", meta: "6q · 5m", difficulty: "Easy", skills: "" },
-  { tag: "tech", tagColor: "#a3c9ff", title: "system design: rate limiter", meta: "4q · 12m", role: "Backend Developer", difficulty: "Hard", skills: "System Design" },
-  { tag: "write", tagColor: "#c6c6c7", title: "concise answers under 150 words", meta: "8q · 10m", difficulty: "Medium", skills: "" },
+  { tag: "star", tagColor: "#d0bcff", title: "behavioral: conflict & failure", meta: "6 questions · 5 min", difficulty: "Easy", skills: "" },
+  { tag: "tech", tagColor: "#a3c9ff", title: "system design: rate limiter", meta: "4 questions · 12 min", role: "Backend Developer", difficulty: "Hard", skills: "System Design" },
+  { tag: "write", tagColor: "#c6c6c7", title: "concise answers under 150 words", meta: "8 questions · 10 min", difficulty: "Medium", skills: "" },
 ];
 
 const glassPanel = { background: "#1f1f24" };
@@ -264,7 +264,7 @@ export default function Dashboard() {
           <h2 className="font-display text-[42px] sm:text-[56px] lg:text-[64px] leading-[1.1] tracking-[-0.02em] text-[#e4e1e8] m-0">
             {greeting}, {firstName}.
           </h2>
-          <p className="text-[15px] sm:text-[18px] leading-[1.6] text-[#cbc3d7] mt-2">your prep modules are calibrated and ready.</p>
+          <p className="text-[15px] sm:text-[18px] leading-[1.6] text-[#cbc3d7] mt-2">ready for your next practice interview.</p>
         </div>
       </header>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Card } from "@/components/ui/Brand";
+import { PageHeader, ActionButton, Panel, StatTile, Avatar } from "@/components/AdminUI";
 
 const DAY_LABELS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -130,122 +130,109 @@ export default function AdminDashboardPage() {
   const completionRate = metrics.totalInterviews > 0 ? Math.round((metrics.completedInterviews / metrics.totalInterviews) * 100) : 0;
 
   const stats = [
-    { label: "TOTAL USERS", value: metrics.totalUsers, delta: `▲ ${usersThisWeek} this week`, color: "#f2f2f5", tint: "rgba(139,92,246,.14)", dot: "#a78bfa" },
-    { label: "INTERVIEWS RUN", value: metrics.totalInterviews, delta: `▲ ${interviewsThisWeek} this week`, color: "#a78bfa", tint: "rgba(139,92,246,.14)", dot: "#8b5cf6" },
-    { label: "STARTED TODAY", value: interviewsToday, delta: `${completionRate}% completion rate`, color: "#34d399", tint: "rgba(52,211,153,.14)", dot: "#34d399" },
-    { label: "OPEN TICKETS", value: openTickets, delta: openTickets > 0 ? "awaiting reply" : "all clear", color: "#f87171", tint: "rgba(248,113,113,.14)", dot: "#f87171" },
+    { label: "total users", value: metrics.totalUsers, delta: `▲ ${usersThisWeek} this week`, color: "#e4e1e8" },
+    { label: "interviews run", value: metrics.totalInterviews, delta: `▲ ${interviewsThisWeek} this week`, color: "#d0bcff" },
+    { label: "started today", value: interviewsToday, delta: `${completionRate}% completion rate`, color: "#34d399" },
+    { label: "open tickets", value: openTickets, delta: openTickets > 0 ? "awaiting reply" : "all clear", color: openTickets > 0 ? "#ffb4ab" : "#34d399" },
   ];
 
   const health = [
-    ["Completion rate", `${completionRate}%`, "#34d399"],
-    ["Avg session length", avgSessionLength, "#f2f2f5"],
-    ["New users this week", usersThisWeek, "#a78bfa"],
-    ["Avg AI score", `${metrics.averageScore}%`, "#5b9be8"],
+    ["completion rate", `${completionRate}%`, "#34d399"],
+    ["avg session length", avgSessionLength, "#e4e1e8"],
+    ["new users this week", usersThisWeek, "#d0bcff"],
+    ["avg AI score", `${metrics.averageScore}%`, "#a3c9ff"],
   ];
 
   return (
     <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 pt-[34px] pb-14 animate-rise">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-[22px]">
-        <div>
-          <h1 className="font-extrabold text-[24px] sm:text-[26px] tracking-[-.8px]">Admin console</h1>
-          <p className="text-[#8a8a97] text-[12.5px] mt-1">Platform analytics, user oversight and support ops.</p>
-        </div>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 border-0 text-white px-4 py-2.5 rounded-xl text-[12.5px] font-semibold disabled:opacity-60 self-start"
-          style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
-        >
-          {refreshing ? "syncing…" : "sync data"}
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="admin console"
+        title="platform overview"
+        description="analytics, user oversight and support."
+        action={
+          <ActionButton onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? "syncing…" : "refresh"}
+          </ActionButton>
+        }
+      />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-[18px]">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-3.5">
         {stats.map((s) => (
-          <Card key={s.label} className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] text-[#7a7a87] tracking-[.6px]">{s.label}</span>
-              <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: s.tint }}>
-                <span className="w-2 h-2 rounded-[3px]" style={{ background: s.dot }} />
-              </span>
-            </div>
-            <div className="font-extrabold text-[25px]" style={{ color: s.color }}>{loading ? "…" : s.value}</div>
-            <div className="text-[11px] text-good mt-2">{loading ? "" : s.delta}</div>
-          </Card>
+          <StatTile key={s.label} label={s.label} value={loading ? "…" : s.value} delta={loading ? undefined : s.delta} color={s.color} />
         ))}
       </div>
 
-      <Card className="p-[22px] sm:p-[24px] mb-[18px]">
-        <div className="font-semibold text-[15px] mb-[22px]">Interviews this week</div>
+      <Panel className="p-[22px] sm:p-[24px] mb-3.5">
+        <span className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase block mb-6">{"// interviews this week"}</span>
         <div className="flex items-end gap-3 sm:gap-3.5 h-[170px]">
           {weekChart.buckets.map((b) => (
             <div key={b.label} className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end">
               <div
-                className="w-full rounded-t-lg"
-                style={{ height: `${Math.max(6, (b.count / weekChart.max) * 100)}%`, background: b.count > 0 ? "linear-gradient(180deg,#8b5cf6,#5b9be8)" : "rgba(255,255,255,.06)" }}
+                className="w-full"
+                style={{ height: `${Math.max(6, (b.count / weekChart.max) * 100)}%`, background: b.count > 0 ? "#d0bcff" : "#2a292e" }}
               />
-              <span className="text-[11px] text-[#7a7a87] uppercase">{b.label}</span>
+              <span className="text-[10.5px] font-bold text-[#6f6f7c] uppercase tracking-[.2em]">{b.label}</span>
             </div>
           ))}
         </div>
-      </Card>
+      </Panel>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 mb-[18px]">
-        <Card className="p-[22px]">
-          <div className="font-semibold text-[14px] mb-[18px]">Top roles practiced</div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 mb-3.5">
+        <Panel className="p-[22px]">
+          <span className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase block mb-5">{"// top roles practiced"}</span>
           {topRoles.length === 0 ? (
-            <div className="text-[12.5px] text-[#7a7a87]">No interviews yet.</div>
+            <div className="text-[12.5px] text-[#6f6f7c]">no interviews yet.</div>
           ) : (
             topRoles.map((r) => (
-              <div key={r.role} className="mb-3.5 last:mb-0">
-                <div className="flex justify-between text-[12px] mb-1.5">
-                  <span className="text-[#c4c4cf]">{r.role}</span>
-                  <span className="text-[#8a8a97]">{r.count}</span>
+              <div key={r.role} className="mb-4 last:mb-0">
+                <div className="flex justify-between text-[12px] mb-2">
+                  <span className="text-[#cbc3d7]">{r.role}</span>
+                  <span className="text-[#6f6f7c]">{r.count}</span>
                 </div>
-                <div className="h-[7px] bg-field rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: "linear-gradient(90deg,#8b5cf6,#5b9be8)" }} />
+                <div className="h-[6px] bg-[#2a292e]">
+                  <div className="h-full" style={{ width: `${r.pct}%`, background: "#d0bcff" }} />
                 </div>
               </div>
             ))
           )}
-        </Card>
+        </Panel>
 
-        <Card className="p-[22px]">
-          <div className="font-semibold text-[14px] mb-3">Platform health</div>
+        <Panel className="p-[22px]">
+          <span className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase block mb-4">{"// platform health"}</span>
           {health.map(([l, v, c]) => (
-            <div key={l} className="flex items-center justify-between py-[11px] border-b border-white/[.05] last:border-0">
+            <div key={l} className="flex items-center justify-between py-3 border-b border-[#2a292e] last:border-0">
               <span className="text-[12.5px] text-[#8a8a97]">{l}</span>
-              <span className="text-[13px] font-semibold" style={{ color: c }}>{v}</span>
+              <span className="font-display text-[14px] tracking-[.05em]" style={{ color: c }}>{v}</span>
             </div>
           ))}
-        </Card>
+        </Panel>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-white/[.07]">
-          <div className="font-semibold text-[15px]">Recent users</div>
-          <p className="text-[11.5px] text-[#7a7a87] mt-1">Recently registered users and their interview performance.</p>
+      <Panel className="overflow-hidden">
+        <div className="p-5 sm:p-6 border-b border-[#494454]">
+          <span className="text-[11px] font-bold tracking-[.2em] text-[#958ea0] uppercase block">{"// recent users"}</span>
+          <p className="text-[11.5px] text-[#6f6f7c] mt-1.5">recently registered users and their interview performance.</p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr className="border-b border-white/[.07] text-[#7a7a87] text-[10px] uppercase tracking-[.5px] bg-field/60">
-                <th className="py-3.5 px-5 sm:px-6">User</th>
-                <th className="py-3.5 px-5 sm:px-6">Target role</th>
-                <th className="py-3.5 px-5 sm:px-6">Experience</th>
-                <th className="py-3.5 px-5 sm:px-6">Interviews</th>
-                <th className="py-3.5 px-5 sm:px-6 text-right">Avg score</th>
+              <tr className="border-b border-[#494454] text-[#6f6f7c] text-[10px] font-bold uppercase tracking-[.2em]">
+                <th className="py-3.5 px-5 sm:px-6">user</th>
+                <th className="py-3.5 px-5 sm:px-6">target role</th>
+                <th className="py-3.5 px-5 sm:px-6">experience</th>
+                <th className="py-3.5 px-5 sm:px-6">interviews</th>
+                <th className="py-3.5 px-5 sm:px-6 text-right">avg score</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[.05] text-[13px] text-[#c4c4cf]">
+            <tbody>
               {recentUsers.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className="border-b border-[#2a292e] last:border-0 text-[13px] text-[#cbc3d7]">
                   <td className="py-3.5 px-5 sm:px-6">
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-[9px] flex-none" style={{ background: "linear-gradient(135deg,#8b5cf6,#5b9be8)" }} />
+                      <Avatar name={user.name} />
                       <div>
-                        <div className="font-medium text-[#e6e6ec]">{user.name}</div>
+                        <div className="font-medium text-[#e4e1e8]">{user.name}</div>
                         <div className="text-[10.5px] text-[#6f6f7c]">{user.email}</div>
                       </div>
                     </div>
@@ -253,13 +240,13 @@ export default function AdminDashboardPage() {
                   <td className="py-3.5 px-5 sm:px-6 text-[12px] text-[#9090a0]">{user.track}</td>
                   <td className="py-3.5 px-5 sm:px-6 text-[12px]">{user.experience}</td>
                   <td className="py-3.5 px-5 sm:px-6 text-[12px]">{user.interviews}</td>
-                  <td className="py-3.5 px-5 sm:px-6 text-right font-semibold text-purple-light">{user.score}%</td>
+                  <td className="py-3.5 px-5 sm:px-6 text-right font-display text-[13px] tracking-[.05em] text-[#d0bcff]">{user.score}%</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </Card>
+      </Panel>
     </div>
   );
 }

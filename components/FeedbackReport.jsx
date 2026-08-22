@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Download, ArrowRight, ChevronDown } from "lucide-react";
 import { generateInterviewPDF } from "@/lib/generateInterviewPDF";
 import FeedbackSkeleton from "@/components/FeedbackSkeleton";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const EXP_LABEL = { "Fresher": "entry-level", "1–2 Years": "mid-level", "3+ Years": "senior" };
 
@@ -100,6 +101,7 @@ export default function FeedbackReport() {
   const [interview, setInterview] = useState(null);
   const [retrying, setRetrying] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function loadFeedback() {
@@ -111,7 +113,7 @@ export default function FeedbackReport() {
         const data = await res.json();
 
         if (!data.success) {
-          alert(data.message);
+          showToast?.({ title: "couldn't load feedback", description: data.message || "please try again.", type: "error" });
           return;
         }
 
@@ -146,13 +148,14 @@ export default function FeedbackReport() {
       });
       const data = await res.json();
       if (!data.success) {
-        alert(data.message);
+        showToast?.({ title: "couldn't start retry", description: data.message || "please try again.", type: "error" });
         setRetrying(false);
         return;
       }
       router.push(`/interviewsession?id=${data.interviewId}`);
     } catch (err) {
       console.error(err);
+      showToast?.({ title: "something went wrong", description: "please try again.", type: "error" });
       setRetrying(false);
     }
   };
@@ -211,7 +214,7 @@ export default function FeedbackReport() {
         <aside className="w-full md:w-[420px] flex-none border-r border-[#494454] flex flex-col items-center justify-center p-8 lg:p-12 relative md:overflow-y-auto" style={{ background: "#0e0e12" }}>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "rgba(208,188,255,.05)", filter: "blur(80px)" }} />
 
-          <h2 className="relative text-[12px] font-bold uppercase tracking-[.3em] text-[#d0bcff] mb-16 whitespace-nowrap">{"// interview_complete"}</h2>
+          <h2 className="relative text-[12px] font-bold uppercase tracking-[.3em] text-[#d0bcff] mb-16 whitespace-nowrap">{"// interview complete"}</h2>
 
           <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-16 flex-none">
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">

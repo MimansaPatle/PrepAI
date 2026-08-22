@@ -140,19 +140,19 @@ export default function HistoryView() {
             className="font-display text-[26px] sm:text-[32px] text-[#e4e1e8] uppercase tracking-[.02em] mb-2"
             style={{ textShadow: "0 0 10px rgba(208,188,255,.5)" }}
           >
-            {"archive // session_history"}
+            {"interview history"}
           </h1>
-          <p className="text-[14px] sm:text-[15px] text-[#cbc3d7]">Access and review past interview simulations.</p>
+          <p className="text-[14px] sm:text-[15px] text-[#cbc3d7]">Review your past practice interviews.</p>
         </div>
         <div className="flex items-center gap-2 text-[13px] font-display tracking-[.05em] text-[#958ea0] border border-[#494454] px-4 py-2 flex-none" style={{ background: "#1b1b20" }}>
           <RefreshCw className="w-3.5 h-3.5" />
-          {`data_sync: ${syncPct}%`}
+          {`loaded: ${syncPct}%`}
         </div>
       </div>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative overflow-hidden p-6 border border-[#494454] group hover:border-[#d0bcff]/50 transition-colors" style={panelStyle}>
-          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// total_sessions"}</div>
+          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// total sessions"}</div>
           <div className="font-display text-[42px] leading-none text-[#d0bcff]" style={{ textShadow: "0 0 10px rgba(208,188,255,.5)" }}>{stats.total}</div>
           <div
             className="mt-4 flex items-center gap-1.5 font-display text-[14px] tracking-[.05em]"
@@ -164,7 +164,7 @@ export default function HistoryView() {
         </div>
 
         <div className="relative overflow-hidden p-6 border border-[#494454] group hover:border-[#a3c9ff]/50 transition-colors" style={panelStyle}>
-          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// avg_score"}</div>
+          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// average score"}</div>
           <div className="font-display text-[42px] leading-none text-[#a3c9ff]" style={{ textShadow: "0 0 10px rgba(163,201,255,.5)" }}>
             {stats.avg}<span className="text-[24px]">%</span>
           </div>
@@ -176,7 +176,7 @@ export default function HistoryView() {
         </div>
 
         <div className="relative overflow-hidden p-6 border border-[#494454] group hover:border-[#d0bcff]/50 transition-colors" style={panelStyle}>
-          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// best_score"}</div>
+          <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// best score"}</div>
           <div className="font-display text-[42px] leading-none text-[#e4e1e8]">
             {stats.best}<span className="text-[24px]">%</span>
           </div>
@@ -185,7 +185,7 @@ export default function HistoryView() {
 
         <div className="relative overflow-hidden p-6 border border-[#494454] group hover:border-[#d0bcff]/50 transition-colors flex flex-col justify-between" style={panelStyle}>
           <div>
-            <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// next_recommended"}</div>
+            <div className="text-[12px] font-bold tracking-[.2em] text-[#958ea0] uppercase mb-4">{"// recommended next"}</div>
             <div className="font-display text-[20px] leading-tight text-[#e4e1e8] truncate">{weakestSession ? weakestSession.role : "—"}</div>
             {weakestSession && (
               <div className="text-[12px] text-[#958ea0] mt-1.5">{`retry · ${weakestSession.difficulty.toLowerCase()} · ${weakestSession.feedback.score}%`}</div>
@@ -196,20 +196,20 @@ export default function HistoryView() {
             disabled={!weakestSession || starting}
             className="mt-4 w-full border border-[#494454] text-[#e4e1e8] text-[12px] font-bold tracking-[.2em] uppercase py-2.5 hover:bg-[#2a292e] transition-colors disabled:opacity-50 disabled:cursor-default cursor-pointer"
           >
-            {starting ? "starting…" : "initiate >>"}
+            {starting ? "starting…" : "start >>"}
           </button>
         </div>
       </section>
 
       <section className="border border-[#494454] flex-1 flex flex-col min-h-[420px]" style={panelStyle}>
         <div className="p-4 border-b border-[#494454] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3" style={{ background: "#1b1b20" }}>
-          <div className="text-[12px] font-bold tracking-[.2em] text-[#d0bcff] uppercase">{"// session_logs.dat"}</div>
+          <div className="text-[12px] font-bold tracking-[.2em] text-[#d0bcff] uppercase">{"// interview log"}</div>
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-[#958ea0] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="FILTER_LOGS..."
+              placeholder="search by role or difficulty…"
               className="bg-[#131317] border-b border-[#494454] focus:border-[#d0bcff] outline-none text-[13px] pl-8 pr-3 py-2 w-full sm:w-52 text-[#e4e1e8] placeholder:text-[#6f6f7c] uppercase tracking-[.05em] transition-colors"
             />
           </div>
@@ -260,7 +260,7 @@ export default function HistoryView() {
                         onClick={() => router.push(`/feedback?id=${session._id}`)}
                         className="text-[12px] font-bold tracking-[.15em] uppercase text-[#d0bcff] hover:text-[#e9ddff] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
                       >
-                        {"review_log >>"}
+                        {"view report >>"}
                       </button>
                     </td>
                   </tr>

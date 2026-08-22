@@ -30,9 +30,9 @@ function FieldLabel({ children }) {
 
 function Field({ icon: Icon, trailing, ...inputProps }) {
   return (
-    <div className="flex items-center gap-2.5 bg-white px-4 py-3.5">
-      <Icon className="w-4 h-4 text-[#8a8697] flex-none" />
-      <input {...inputProps} className="flex-1 min-w-0 bg-transparent text-[13px] text-[#1a1a1f] outline-none placeholder:text-[#8a8697]" />
+    <div className="flex items-center gap-2.5 border border-[#494454] focus-within:border-[#d0bcff] px-4 py-3.5 transition-colors duration-200" style={{ background: "#1f1f24" }}>
+      <Icon className="w-4 h-4 text-white flex-none" />
+      <input {...inputProps} className="auth-field-input flex-1 min-w-0 bg-transparent text-[13px] text-white outline-none placeholder:text-white" />
       {trailing}
     </div>
   );
@@ -57,8 +57,8 @@ function AutocompleteField({ icon: Icon, value, onChange, suggestions, placehold
 
   return (
     <div className="relative" ref={wrapRef}>
-      <div className="flex items-center gap-2.5 bg-white px-4 py-3.5">
-        <Icon className="w-4 h-4 text-[#8a8697] flex-none" />
+      <div className="flex items-center gap-2.5 border border-[#494454] focus-within:border-[#d0bcff] px-4 py-3.5 transition-colors duration-200" style={{ background: "#1f1f24" }}>
+        <Icon className="w-4 h-4 text-white flex-none" />
         <input
           required={required}
           value={value}
@@ -66,16 +66,16 @@ function AutocompleteField({ icon: Icon, value, onChange, suggestions, placehold
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
-          className="flex-1 min-w-0 bg-transparent text-[13px] text-[#1a1a1f] outline-none placeholder:text-[#8a8697]"
+          className="auth-field-input flex-1 min-w-0 bg-transparent text-[13px] text-white outline-none placeholder:text-white"
         />
       </div>
       {open && filtered.length > 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-white/[.1] max-h-[220px] overflow-y-auto">
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 border border-[#494454] max-h-[220px] overflow-y-auto" style={{ background: "#1f1f24" }}>
           {filtered.map((s) => (
             <div
               key={s}
               onMouseDown={() => { onChange(s); setOpen(false); }}
-              className="px-4 py-2.5 text-[13px] text-[#1a1a1f] hover:bg-[#efecf7] cursor-pointer"
+              className="px-4 py-2.5 text-[13px] text-[#e4e1e8] hover:bg-[#2a292e] cursor-pointer"
             >
               {s}
             </div>
@@ -215,15 +215,13 @@ export default function LoginView() {
             </div>
             <div className="border-t border-white/[.08] mb-5" />
 
-            <h1 className="font-display text-[32px] sm:text-[40px] leading-[1.08] text-[#e4e1e8]">
-              {signup ? "new_user" : "returning_user"}
-            </h1>
-            <h1 className="font-display text-[32px] sm:text-[40px] leading-[1.08] text-[#d0bcff] mb-4">
-              {signup ? "initialization" : "authentication"}
+            <h1 className="font-display text-[32px] sm:text-[40px] leading-[1.08] mb-4">
+              <span className="text-[#e4e1e8]">{signup ? "create your" : "welcome"}</span>{" "}
+              <span className="text-[#d0bcff]">{signup ? "account" : "back"}</span>
             </h1>
 
             <div className="inline-flex items-center border border-white/[.12] px-3.5 py-2 text-[10.5px] uppercase tracking-[.5px] text-[#958ea0] mb-5">
-              {signup ? "// begin protocol sequence" : "// resume protocol sequence"}
+              {signup ? "// takes about a minute" : "// enter your email and password"}
             </div>
 
             <div className="flex gap-2 mb-5">
@@ -239,7 +237,7 @@ export default function LoginView() {
                       : { borderColor: "rgba(255,255,255,.1)", color: "#6f6f7c", background: "transparent" }
                   }
                 >
-                  {t === "login" ? "sign_in" : "create_account"}
+                  {t === "login" ? "log in" : "sign up"}
                 </button>
               ))}
             </div>
@@ -256,19 +254,19 @@ export default function LoginView() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {signup && (
                 <div>
-                  <FieldLabel>// operative_name</FieldLabel>
-                  <Field icon={TerminalSquare} required value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter designation..." />
+                  <FieldLabel>// your name</FieldLabel>
+                  <Field icon={TerminalSquare} required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Jordan Lee" />
                 </div>
               )}
 
               <div>
-                <FieldLabel>// contact_vector (email)</FieldLabel>
-                <Field icon={Mail} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="secure_comm@domain.com" />
+                <FieldLabel>// email</FieldLabel>
+                <Field icon={Mail} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
               </div>
 
               {signup && (
                 <div>
-                  <FieldLabel>// target_role</FieldLabel>
+                  <FieldLabel>// role you are preparing for</FieldLabel>
                   <AutocompleteField
                     icon={UserCog}
                     required
@@ -281,7 +279,7 @@ export default function LoginView() {
               )}
 
               <div>
-                <FieldLabel>{signup ? "// access_cipher" : "// passcode"}</FieldLabel>
+                <FieldLabel>// password</FieldLabel>
                 <Field
                   icon={KeyRound}
                   type={showPassword ? "text" : "password"}
@@ -293,7 +291,7 @@ export default function LoginView() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="flex-none text-[#8a8697] hover:text-[#1a1a1f] transition-colors duration-200 cursor-pointer"
+                      className="flex-none text-[#958ea0] hover:text-[#d0bcff] transition-colors duration-200 cursor-pointer"
                       aria-label={showPassword ? "hide password" : "show password"}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -316,7 +314,7 @@ export default function LoginView() {
 
               {signup && (
                 <div>
-                  <FieldLabel>// experience_tier</FieldLabel>
+                  <FieldLabel>// experience level</FieldLabel>
                   <div className="grid grid-cols-3 gap-3">
                     {EXPERIENCE_TIERS.map((tier) => {
                       const active = experience === tier.value;
@@ -348,7 +346,7 @@ export default function LoginView() {
                 className="w-full text-[13.5px] uppercase tracking-[.5px] font-bold py-3.5 border transition-all duration-200 hover:scale-[1.01] hover:brightness-125 disabled:opacity-50 disabled:hover:scale-100 cursor-pointer"
                 style={{ background: "#1f1f24", borderColor: "rgba(208,188,255,.3)", color: "#d0bcff" }}
               >
-                {submitting ? "please wait…" : signup ? "initialize_protocol »" : "authenticate_protocol »"}
+                {submitting ? "please wait…" : signup ? "create account »" : "log in »"}
               </button>
             </form>
 
@@ -357,7 +355,7 @@ export default function LoginView() {
                 onClick={() => router.push("/")}
                 className="inline-flex text-[11px] text-[#6f6f7c] hover:text-[#e4e1e8] uppercase tracking-[.5px] transition-all duration-200 hover:-translate-x-1 cursor-pointer"
               >
-                ← back_to_home
+                ← back to home
               </button>
             </div>
           </div>
@@ -372,44 +370,44 @@ export default function LoginView() {
         <div className="hidden lg:flex flex-col gap-5 border-l border-white/[.08] px-8 py-10 justify-center" style={{ background: "#131317" }}>
           <div className="border border-white/[.1] px-5 py-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-[#e4e1e8]">// sys_integrity</span>
+              <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-[#e4e1e8]">// account status</span>
               <Settings2 className="w-4 h-4 text-[#6f6f7c]" />
             </div>
             <div className="h-[6px] w-full bg-white/[.08]">
               <div className="h-full" style={{ width: "85%", background: "#d0bcff" }} />
             </div>
-            <div className="text-right text-[10px] text-[#6f6f7c] uppercase tracking-[.5px] mt-2">85% optimal</div>
+            <div className="text-right text-[10px] text-[#6f6f7c] uppercase tracking-[.5px] mt-2">looking good</div>
           </div>
 
-          <StatusBox dot="#34d399" label="secure_connection" value="handshake_ack 24ms" />
+          <StatusBox dot="#34d399" label="connection" value="secure" />
           <StatusBox
             dot="#a3c9ff"
-            label="identity_metrics"
-            value={email ? `verifying ${email.slice(0, 18)}${email.length > 18 ? "…" : ""}` : "awaiting_input..."}
+            label="email"
+            value={email ? `verifying ${email.slice(0, 18)}${email.length > 18 ? "…" : ""}` : "waiting for input…"}
           />
           {signup ? (
             <StatusBox
               dot="#d0bcff"
-              label="role_calibration"
-              value={favoriteRole ? favoriteRole : "pending_initialization"}
+              label="target role"
+              value={favoriteRole ? favoriteRole : "not set yet"}
               dim={!favoriteRole}
             />
           ) : (
-            <StatusBox dot="#d0bcff" label="session_token" value="pending_initialization" dim />
+            <StatusBox dot="#d0bcff" label="session" value="not started yet" dim />
           )}
 
           <div className="border border-dashed border-white/[.15] px-4 py-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">session_id:</span>
-              <span className="text-[#e4e1e8]">0x9A4F2</span>
+              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">connection:</span>
+              <span className="text-[#e4e1e8]">secure</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">latency:</span>
-              <span className="text-[#e4e1e8]">12ms</span>
+              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">encryption:</span>
+              <span className="text-[#e4e1e8]">enabled</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">enc_algo:</span>
-              <span className="text-[#e4e1e8]">RSA-4096</span>
+              <span className="text-[#6f6f7c] uppercase tracking-[.5px]">your data:</span>
+              <span className="text-[#e4e1e8]">private</span>
             </div>
           </div>
         </div>

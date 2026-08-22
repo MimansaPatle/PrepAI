@@ -81,6 +81,7 @@ html { overflow-x: hidden; }
 ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, .28); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 input::placeholder, textarea::placeholder { color: #4f4f5c; }
+.auth-field-input::placeholder { color: #ffffff; opacity: 0.5; }
 select { -webkit-appearance: none; appearance: none; }
 
 body {
@@ -228,6 +229,7 @@ html {
 .dot-grid-terminal {
   background-image: radial-gradient(rgba(148, 137, 158, .55) 1px, transparent 1px);
   background-size: 18px 18px;
+  filter: blur(1.5px);
 }
 
 @keyframes blockcaret {

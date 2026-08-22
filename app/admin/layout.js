@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import AdminNavbar from "@/components/AdminNavbar";
+import AdminSidebar from "@/components/AdminSidebar";
 
 export default async function AdminLayout({ children }) {
   const session = await auth();
@@ -16,9 +16,10 @@ export default async function AdminLayout({ children }) {
   }
 
   return (
-  <>
-    <AdminNavbar />
-    {children}
-  </>
-);
+    <div className="relative flex flex-col lg:flex-row min-h-screen" style={{ background: "#131317" }}>
+      <div className="dot-grid-terminal fixed inset-0 pointer-events-none" />
+      <AdminSidebar />
+      <div className="relative flex-1 min-w-0">{children}</div>
+    </div>
+  );
 }

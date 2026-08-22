@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, fieldClass } from "@/components/ui/Brand";
+import { PageHeader, ActionButton, Panel, Tag, Avatar, searchFieldClass } from "@/components/AdminUI";
 
 export default function AdminInterviewsPage() {
     const router = useRouter();
@@ -46,82 +46,68 @@ export default function AdminInterviewsPage() {
 
     return (
         <div className="w-full px-5 sm:px-8 lg:px-14 xl:px-20 pt-[34px] pb-14 animate-rise">
+            <PageHeader
+                eyebrow="admin / interviews"
+                title="interview management"
+                description="monitor interview sessions and AI evaluation results."
+                action={
+                    <ActionButton onClick={handleRefresh} disabled={refreshing}>
+                        {refreshing ? "syncing…" : "refresh"}
+                    </ActionButton>
+                }
+            />
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-[22px]">
-                <div>
-                    <h1 className="font-extrabold text-[24px] sm:text-[26px] tracking-[-.8px]">Interview management</h1>
-                    <p className="text-[#8a8a97] text-[12.5px] mt-1">Monitor interview sessions and AI evaluation results.</p>
-                </div>
-                <button
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                    className="inline-flex items-center gap-2 border-0 text-white px-4 py-2.5 rounded-xl text-[12.5px] font-semibold disabled:opacity-60 self-start"
-                    style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
-                >
-                    {refreshing ? "syncing…" : "refresh"}
-                </button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-5">
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-6">
                 <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search candidate, role, difficulty…"
-                    className={`${fieldClass} sm:max-w-md`}
+                    placeholder="search candidate, role, difficulty…"
+                    className={`${searchFieldClass} sm:max-w-md`}
                 />
-                <div className="text-[12.5px] text-[#7a7a87]">
-                    Total interviews: <span className="text-[#e6e6ec] font-semibold ml-1">{interviews.length}</span>
+                <div className="text-[12px] text-[#8a8a97] uppercase tracking-[.2em]">
+                    total interviews: <span className="text-[#e4e1e8] font-bold ml-1">{interviews.length}</span>
                 </div>
             </div>
 
-            <Card className="overflow-hidden">
+            <Panel className="overflow-hidden">
                 {loading ? (
-                    <div className="p-12 text-center text-[#7a7a87] text-[13px]">Loading interviews…</div>
+                    <div className="p-12 text-center text-[#6f6f7c] text-[13px]">loading interviews…</div>
                 ) : filteredInterviews.length === 0 ? (
-                    <div className="p-12 text-center text-[#7a7a87] text-[13px]">No interviews found.</div>
+                    <div className="p-12 text-center text-[#6f6f7c] text-[13px]">no interviews found.</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left min-w-[820px]">
                             <thead>
-                                <tr className="border-b border-white/[.07] text-[#7a7a87] text-[10px] uppercase tracking-[.5px] bg-field/60">
-                                    <th className="py-3.5 px-5 sm:px-6">Candidate</th>
-                                    <th className="py-3.5 px-5 sm:px-6">Role</th>
-                                    <th className="py-3.5 px-5 sm:px-6">Difficulty</th>
-                                    <th className="py-3.5 px-5 sm:px-6">Status</th>
-                                    <th className="py-3.5 px-5 sm:px-6 text-right">Score</th>
-                                    <th className="py-3.5 px-5 sm:px-6 text-right">Date</th>
-                                    <th className="py-3.5 px-5 sm:px-6 text-right">Action</th>
+                                <tr className="border-b border-[#494454] text-[#6f6f7c] text-[10px] font-bold uppercase tracking-[.2em]">
+                                    <th className="py-3.5 px-5 sm:px-6">candidate</th>
+                                    <th className="py-3.5 px-5 sm:px-6">role</th>
+                                    <th className="py-3.5 px-5 sm:px-6">difficulty</th>
+                                    <th className="py-3.5 px-5 sm:px-6">status</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">score</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">date</th>
+                                    <th className="py-3.5 px-5 sm:px-6 text-right">action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/[.05] text-[13px] text-[#c4c4cf]">
+                            <tbody>
                                 {filteredInterviews.map((interview) => (
-                                    <tr key={interview.id}>
+                                    <tr key={interview.id} className="border-b border-[#2a292e] last:border-0 text-[13px] text-[#cbc3d7]">
                                         <td className="py-3.5 px-5 sm:px-6">
                                             <div className="flex items-center gap-3">
-                                                <span className="w-7 h-7 rounded-[9px] flex-none" style={{ background: "linear-gradient(135deg,#8b5cf6,#5b9be8)" }} />
+                                                <Avatar name={interview.user?.name} />
                                                 <div>
-                                                    <div className="font-medium text-[#e6e6ec]">{interview.user?.name}</div>
+                                                    <div className="font-medium text-[#e4e1e8]">{interview.user?.name}</div>
                                                     <div className="text-[10.5px] text-[#6f6f7c]">{interview.user?.email}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="py-3.5 px-5 sm:px-6 text-[12px]">{interview.role || "—"}</td>
                                         <td className="py-3.5 px-5 sm:px-6">
-                                            <span className="text-[10.5px] px-2.5 py-1 rounded-full bg-field text-[#9090a0] uppercase tracking-[.4px]">{interview.difficulty || "—"}</span>
+                                            <Tag>{interview.difficulty || "—"}</Tag>
                                         </td>
                                         <td className="py-3.5 px-5 sm:px-6">
-                                            <span
-                                                className="text-[10.5px] px-2.5 py-1 rounded-full border"
-                                                style={
-                                                    interview.status === "completed"
-                                                        ? { background: "rgba(52,211,153,.1)", color: "#34d399", borderColor: "rgba(52,211,153,.2)" }
-                                                        : { background: "rgba(139,92,246,.12)", color: "#c4b5fd", borderColor: "rgba(139,92,246,.24)" }
-                                                }
-                                            >
-                                                {interview.status}
-                                            </span>
+                                            <Tag tone={interview.status === "completed" ? "good" : "purple"}>{interview.status}</Tag>
                                         </td>
-                                        <td className="py-3.5 px-5 sm:px-6 text-right font-semibold text-purple-light">
+                                        <td className="py-3.5 px-5 sm:px-6 text-right font-display text-[13px] tracking-[.05em] text-[#d0bcff]">
                                             {interview.score !== null ? `${interview.score}%` : "—"}
                                         </td>
                                         <td className="py-3.5 px-5 sm:px-6 text-right text-[11px] text-[#6f6f7c]">
@@ -132,10 +118,10 @@ export default function AdminInterviewsPage() {
                                         <td className="py-3.5 px-5 sm:px-6 text-right">
                                             <button
                                                 onClick={() => router.push(`/admin/interviews/${interview.id}`)}
-                                                className="text-[11.5px] font-medium text-purple-light px-3 py-1.5 rounded-lg border border-purple/25"
-                                                style={{ background: "rgba(139,92,246,.1)" }}
+                                                className="text-[11px] font-bold uppercase tracking-[.2em] text-[#d0bcff] px-3 py-1.5 border cursor-pointer hover:scale-[1.03] transition-transform duration-200"
+                                                style={{ background: "rgba(208,188,255,.08)", borderColor: "rgba(208,188,255,.3)" }}
                                             >
-                                                View →
+                                                view →
                                             </button>
                                         </td>
                                     </tr>
@@ -144,7 +130,7 @@ export default function AdminInterviewsPage() {
                         </table>
                     </div>
                 )}
-            </Card>
+            </Panel>
         </div>
     );
 }

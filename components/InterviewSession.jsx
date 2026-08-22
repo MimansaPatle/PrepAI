@@ -2,6 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Mic, Square, Zap } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export default function InterviewSession() {
   const [questions, setQuestions] = useState([]);
@@ -15,6 +16,7 @@ export default function InterviewSession() {
   const hasLoaded = useRef(false);
 
   const router = useRouter();
+  const { showToast } = useToast();
   const [config, setConfig] = useState({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,7 +73,7 @@ export default function InterviewSession() {
         const data = await response.json();
 
         if (!data.success) {
-          alert(data.message);
+          showToast?.({ title: "couldn't load interview", description: data.message || "please try again.", type: "error" });
           router.push("/interview");
           return;
         }
@@ -88,19 +90,21 @@ export default function InterviewSession() {
         const aiData = await aiResponse.json();
 
         if (aiData.quotaExceeded) {
-          alert("Daily Gemini quota reached.\nPlease try again tomorrow.");
+          showToast?.({ title: "daily limit reached", description: "we've hit today's limit for interviews. please try again tomorrow.", type: "error" });
+          router.push("/interview");
           return;
         }
 
         if (!aiData.success) {
-          alert(aiData.message);
+          showToast?.({ title: "couldn't load interview", description: aiData.message || "please try again.", type: "error" });
+          router.push("/interview");
           return;
         }
 
         setQuestions([aiData.question]);
       } catch (error) {
         console.error(error);
-        alert("Unable to load interview.");
+        showToast?.({ title: "couldn't load interview", description: "please try again.", type: "error" });
         router.push("/interview");
       }
     };
@@ -142,7 +146,7 @@ export default function InterviewSession() {
       const data = await response.json();
 
       if (!data.success) {
-        alert(data.message);
+        showToast?.({ title: "couldn't submit answer", description: data.message || "please try again.", type: "error" });
         return;
       }
 
@@ -164,7 +168,8 @@ export default function InterviewSession() {
         const completeData = await completeResponse.json();
 
         if (!completeData.success) {
-          alert(completeData.message);
+          showToast?.({ title: "couldn't finish interview", description: completeData.message || "please try again.", type: "error" });
+          setLoadingStage(null);
           return;
         }
 
@@ -185,7 +190,7 @@ export default function InterviewSession() {
       const nextQuestionData = await nextQuestionResponse.json();
 
       if (!nextQuestionData.success) {
-        alert(nextQuestionData.message);
+        showToast?.({ title: "couldn't load next question", description: nextQuestionData.message || "please try again.", type: "error" });
         return;
       }
 
@@ -193,7 +198,7 @@ export default function InterviewSession() {
       setCurrentIndex((prev) => prev + 1);
     } catch (error) {
       console.error(error);
-      alert("Something went wrong.");
+      showToast?.({ title: "something went wrong", description: "please try again.", type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -202,9 +207,9 @@ export default function InterviewSession() {
   const toggleRecording = () => {
     if (!isRecording) {
       setIsRecording(true);
-      setRecordingText("calibrating voice signal pipeline…");
+      setRecordingText("listening…");
       setTimeout(() => {
-        const simulatedVoiceAns = `Specifically standardizing on ${config.role || "this position"}, I focus on latency reductions, test coverage benchmarks, and resilient fault isolation metrics.`;
+        const simulatedVoiceAns = `In my experience with ${config.role || "this role"}, I focus on writing clean, well-tested code and communicating clearly with my team.`;
         setCurrentAnswer((prev) => (prev ? prev + " " + simulatedVoiceAns : simulatedVoiceAns));
         setIsRecording(false);
         setRecordingText("");
@@ -228,7 +233,7 @@ export default function InterviewSession() {
       <div className="h-screen flex items-center justify-center" style={{ background: "#0e0e12" }}>
         <div className="dot-grid-terminal fixed inset-0 pointer-events-none" />
         <p className="relative font-display text-[16px] text-[#958ea0] uppercase tracking-[.2em] flex items-center gap-2">
-          {"// initializing_session"} <span className="inline-block w-2.5 h-2.5 bg-[#d0bcff] animate-blockcaret" />
+          {"// setting up your interview"} <span className="inline-block w-2.5 h-2.5 bg-[#d0bcff] animate-blockcaret" />
         </p>
       </div>
     );
@@ -265,7 +270,7 @@ export default function InterviewSession() {
           onClick={() => router.push("/interview")}
           className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[.15em] text-[#958ea0] hover:text-[#f87171] transition-colors duration-200 cursor-pointer"
         >
-          <ChevronLeft className="w-4 h-4" /> end_interview
+          <ChevronLeft className="w-4 h-4" /> end interview
         </button>
 
         <div className="hidden md:block text-[10px] tracking-[.2em] uppercase text-[#6f6f7c]">
@@ -273,7 +278,7 @@ export default function InterviewSession() {
         </div>
 
         <div className="text-right">
-          <div className="text-[9px] uppercase tracking-[.15em] text-[#6f6f7c]">{isSubmitting ? "time (paused)" : "time_remaining"}</div>
+          <div className="text-[9px] uppercase tracking-[.15em] text-[#6f6f7c]">{isSubmitting ? "time (paused)" : "time remaining"}</div>
           <div
             className={`font-display text-[16px] leading-none mt-0.5 ${
               isSubmitting ? "text-[#6f6f7c]" : timeLeft < 30 ? "text-[#f87171] animate-pulse" : "text-[#34d399]"
@@ -298,14 +303,14 @@ export default function InterviewSession() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="PrepAI" className="w-9 h-9 object-contain flex-none" />
                 <div className="min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-[.15em] text-[#d0bcff] mb-2.5">{"// ai_prompt"}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[.15em] text-[#d0bcff] mb-2.5">{"// interview question"}</div>
                   <div className="text-[14.5px] sm:text-[15.5px] leading-[1.6] text-[#e4e1e8]">{questions[currentIndex]}</div>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[10px] font-bold uppercase tracking-[.15em] text-[#6f6f7c]">your_answer</span>
+              <span className="text-[10px] font-bold uppercase tracking-[.15em] text-[#6f6f7c]">your answer</span>
               <button
                 onClick={toggleRecording}
                 className={`flex items-center gap-2 border px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[.1em] transition-all duration-200 cursor-pointer hover:scale-[1.03] ${
@@ -314,7 +319,7 @@ export default function InterviewSession() {
                 style={isRecording ? { background: "rgba(248,113,113,.08)" } : undefined}
               >
                 {isRecording ? <Square className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
-                {isRecording ? "calibrating…" : "voice_input"}
+                {isRecording ? "listening…" : "voice input"}
               </button>
             </div>
 
@@ -339,7 +344,7 @@ export default function InterviewSession() {
                 onClick={() => handleNextQuestion("[Answer skipped by user]")}
                 className="text-[11px] font-bold uppercase tracking-[.1em] text-[#6f6f7c] hover:text-[#e4e1e8] transition-colors duration-200 cursor-pointer disabled:opacity-50"
               >
-                skip_question
+                skip question
               </button>
               <button
                 disabled={isSubmitting}
@@ -351,8 +356,8 @@ export default function InterviewSession() {
                 {isSubmitting
                   ? "evaluating…"
                   : currentIndex === TOTAL_QUESTIONS - 1
-                  ? "submit_&_evaluate »"
-                  : "save_&_continue »"}
+                  ? "submit & finish »"
+                  : "save & continue »"}
               </button>
             </div>
           </div>
@@ -360,11 +365,11 @@ export default function InterviewSession() {
           <div className="flex flex-col gap-5">
             <div className="border border-[#494454] p-5" style={{ background: "#1f1f24" }}>
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-[#d0bcff] mb-4">
-                <Zap className="w-3.5 h-3.5" /> {"// live_coach_tips"}
+                <Zap className="w-3.5 h-3.5" /> {"// live coach tips"}
               </div>
               <div className="border border-white/[.06] p-3.5 mb-2.5" style={{ background: "#0e0e12" }}>
                 <div className="text-[11px] font-bold text-[#e4e1e8] mb-1.5">target keywords</div>
-                <div className="text-[11px] text-[#958ea0] leading-[1.6]">weave your <span className="text-[#cbc3d7]">{config.skills || "core skills"}</span> into the model.</div>
+                <div className="text-[11px] text-[#958ea0] leading-[1.6]">try working <span className="text-[#cbc3d7]">{config.skills || "your core skills"}</span> into your answer.</div>
               </div>
               <div className="border border-white/[.06] p-3.5 mb-2.5" style={{ background: "#0e0e12" }}>
                 <div className="text-[11px] font-bold text-[#e4e1e8] mb-1.5">star method</div>
@@ -382,7 +387,7 @@ export default function InterviewSession() {
             </div>
 
             <div className="border border-[#494454] p-5" style={{ background: "#1f1f24" }}>
-              <div className="text-[10px] font-bold uppercase tracking-[.15em] text-[#6f6f7c] mb-4">{"// question_navigator"}</div>
+              <div className="text-[10px] font-bold uppercase tracking-[.15em] text-[#6f6f7c] mb-4">{"// questions"}</div>
               <div className="flex gap-2">
                 {Array.from({ length: TOTAL_QUESTIONS }).map((_, i) => {
                   const done = i < currentIndex;

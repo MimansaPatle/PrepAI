@@ -8,7 +8,7 @@ import { ScrollReveal, ScrollRevealGroup, ScrollRevealItem } from "@/components/
 
 const STATS = [
   { num: 50, suffix: "+", label: "role tracks" },
-  { num: 92, suffix: "%", label: "full mock ready" },
+  { num: 92, suffix: "%", label: "sessions completed" },
   { num: 2, suffix: "m", label: "avg. response time" },
   { num: 1, suffix: "m+", label: "answers scored" },
 ];
@@ -275,7 +275,7 @@ export default function Home() {
 
           <div className="hidden sm:flex items-center gap-1">
             <a href="#how-it-works" className="px-3.5 py-2 text-[11px] uppercase tracking-[.6px] text-[#958ea0] hover:text-[#e4e1e8] transition-colors duration-200">product</a>
-            <a href="#proof" className="px-3.5 py-2 text-[11px] uppercase tracking-[.6px] text-[#958ea0] hover:text-[#e4e1e8] transition-colors duration-200">models</a>
+            <a href="#proof" className="px-3.5 py-2 text-[11px] uppercase tracking-[.6px] text-[#958ea0] hover:text-[#e4e1e8] transition-colors duration-200">results</a>
             <a href="#cta" className="px-3.5 py-2 text-[11px] uppercase tracking-[.6px] text-[#958ea0] hover:text-[#e4e1e8] transition-colors duration-200">pricing</a>
             <button onClick={() => router.push("/login")} className="px-3.5 py-2 text-[11px] uppercase tracking-[.6px] text-[#958ea0] hover:text-[#e4e1e8] transition-colors duration-200 cursor-pointer">log in</button>
           </div>
@@ -339,16 +339,16 @@ export default function Home() {
             // ai mock-interview coach
           </div>
           <h1 className="font-display text-[38px] sm:text-[52px] leading-[1.16] mb-6 text-[#e4e1e8]">
-            ace it before you<br />
+            practice your interview<br />
             <span
               className="italic"
               style={{ background: "linear-gradient(90deg,#d0bcff,#a3c9ff)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}
             >
-              walk in.
+              before the real one.
             </span>
           </h1>
           <p className="text-[14.5px] leading-[1.75] text-[#958ea0] max-w-[440px] mb-8">
-            prepai runs interviews that feel real — you type your answers. it scores content, structure and clarity, and hands you the exact fix. one question at a time.
+            prepai feels like a real interview. answer at your own pace, get scored on content, structure and clarity, and see exactly what to improve — one question at a time.
           </p>
           <div className="flex flex-wrap gap-3 mb-9">
             <button
@@ -385,23 +385,23 @@ export default function Home() {
             <div className="dot-grid absolute inset-0 opacity-[0.1] pointer-events-none" />
             <div className="relative px-5 py-4 flex items-center justify-between border-b border-white/[.06]">
               <span className="flex items-center gap-2 text-[10.5px] uppercase tracking-[.6px] text-[#958ea0]">
-                <span className="w-1.5 h-1.5 rounded-full animate-glowpulse" style={{ background: "#34d399" }} /> live &middot; prompted interview
+                <span className="w-1.5 h-1.5 rounded-full animate-glowpulse" style={{ background: "#34d399" }} /> live &middot; mock interview
               </span>
               <span className="font-display text-[13px] text-[#a3c9ff]">04/10</span>
             </div>
             <div className="relative px-5 pt-5">
               <p className="text-[15px] italic text-[#e4e1e8] leading-[1.6] mb-5">
-                &ldquo;tell me about a time you disagreed with a teammate.&rdquo;
+                &ldquo;tell me about a time you solved a difficult problem.&rdquo;
               </p>
               <div className="rounded-[10px] border border-white/[.08] p-4 mb-4" style={{ background: "#0e0e12" }}>
                 <div className="text-[9.5px] uppercase tracking-[.5px] text-[#6f6f7c] mb-2.5">// your typed answer</div>
                 <p className="text-[12.5px] leading-[1.7] text-[#cbc3d7]">
-                  during a sprint i pushed back on shipping without tests. i paired with the lead, we agreed on a quick coverage plan
+                  our team was behind on a deadline. i broke the work into smaller tasks, asked for help where needed, and we finished on time
                   <span className="inline-block w-[7px] h-[13px] bg-[#a3c9ff] align-middle ml-0.5 animate-blockcaret" />
                 </p>
               </div>
               <div className="flex items-center justify-between mb-5">
-                <span className="text-[10.5px] text-[#6f6f7c] tracking-[.3px]">kb.state &middot; 34s</span>
+                <span className="text-[10.5px] text-[#6f6f7c] tracking-[.3px]">typing &middot; 34s</span>
                 <button className="text-[10.5px] uppercase tracking-[.5px] px-3.5 py-2 rounded-md font-semibold transition-all duration-200 hover:scale-[1.05] hover:brightness-110" style={{ background: "#a3c9ff", color: "#00315c" }}>
                   submit
                 </button>
@@ -509,7 +509,7 @@ export default function Home() {
           <span>&copy; 2026 prepai // artificial intelligence interview systems</span>
           <span className="flex gap-5">
             <span>privacy policy</span>
-            <span>terminal_os</span>
+            <span>terms of service</span>
             <span>system status</span>
             <button onClick={() => router.push("/support")} className="uppercase hover:text-[#e4e1e8] transition-colors duration-200 cursor-pointer">contact</button>
           </span>

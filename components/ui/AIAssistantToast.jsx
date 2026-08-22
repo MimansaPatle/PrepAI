@@ -3,10 +3,10 @@
 import { CheckCircle2, AlertTriangle, LoaderCircle, Info, X } from "lucide-react";
 
 const STYLES = {
-  success: { icon: CheckCircle2, color: "#34d399", tag: "sys_ok" },
-  error: { icon: AlertTriangle, color: "#f87171", tag: "sys_error" },
+  success: { icon: CheckCircle2, color: "#34d399", tag: "success" },
+  error: { icon: AlertTriangle, color: "#f87171", tag: "error" },
   loading: { icon: LoaderCircle, color: "#a3c9ff", tag: "processing" },
-  info: { icon: Info, color: "#d0bcff", tag: "sys_info" },
+  info: { icon: Info, color: "#d0bcff", tag: "info" },
 };
 
 export default function AIAssistantToast({ show, title, description, type, onClose }) {

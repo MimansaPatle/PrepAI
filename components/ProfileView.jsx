@@ -269,7 +269,6 @@ export default function ProfileView() {
   const [archive, setArchive] = useState(false);
   const [notif, setNotif] = useState({ critical: true, reminders: true, weekly: false });
 
-  const [sessionId] = useState(() => Math.random().toString(16).slice(2, 10).toUpperCase());
   const [uptime, setUptime] = useState(0);
 
   useEffect(() => {
@@ -317,17 +316,17 @@ export default function ProfileView() {
       if (data.success) {
         setTimeout(() => {
           setSaving(false);
-          showToast({ title: "profile synchronized", description: "identity and calibration data committed successfully." });
+          showToast({ title: "profile updated", description: "your changes have been saved." });
         }, 500);
         return;
       }
 
       setSaving(false);
-      showToast({ title: "commit failed", description: data.message || "please try again.", type: "error" });
+      showToast({ title: "save failed", description: data.message || "please try again.", type: "error" });
     } catch (err) {
       console.error(err);
       setSaving(false);
-      showToast({ title: "commit failed", description: "something went wrong.", type: "error" });
+      showToast({ title: "save failed", description: "something went wrong.", type: "error" });
     }
   };
 
@@ -335,7 +334,7 @@ export default function ProfileView() {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="font-display text-[16px] text-[#958ea0] uppercase tracking-[.2em] flex items-center gap-2">
-          {"// loading_profile"} <span className="inline-block w-2.5 h-2.5 bg-[#d0bcff] animate-blockcaret" />
+          {"// loading your profile"} <span className="inline-block w-2.5 h-2.5 bg-[#d0bcff] animate-blockcaret" />
         </p>
       </div>
     );
@@ -346,11 +345,10 @@ export default function ProfileView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#494454]">
         <div className="flex items-center gap-2 text-[10.5px] uppercase tracking-[.2em] text-[#958ea0]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#d0bcff] animate-pulse flex-none" />
-          sys_config_terminal <span className="text-[#494454]">//</span> secure_connection
+          account settings <span className="text-[#494454]">//</span> connected
         </div>
         <div className="text-right text-[10px] uppercase tracking-[.15em] text-[#6f6f7c] leading-[1.7]">
-          <div>session_id: <span className="text-[#a3c9ff]">{sessionId}</span></div>
-          <div>uptime: <span className="text-[#a3c9ff]">{formatUptime(uptime)}</span></div>
+          <div>time here: <span className="text-[#a3c9ff]">{formatUptime(uptime)}</span></div>
         </div>
       </div>
 
@@ -358,42 +356,42 @@ export default function ProfileView() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
         <div className="flex flex-col gap-8 min-w-0">
-          <Panel icon={Settings2} title="system_configuration">
+          <Panel icon={Settings2} title="basic info">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <UnderlineField label="operative_name" value={name} onChange={setName} required />
-              <UnderlineField label="contact_vector (email)" value={email} disabled />
+              <UnderlineField label="name" value={name} onChange={setName} required />
+              <UnderlineField label="email" value={email} disabled />
             </div>
           </Panel>
 
-          <Panel icon={Target} title="interview_calibration">
+          <Panel icon={Target} title="interview preferences">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-              <UnderlineAutocomplete label="target_role" value={favoriteRole} onChange={setFavoriteRole} suggestions={ROLE_SUGGESTIONS} placeholder="e.g. Full Stack Developer" />
-              <UnderlineAutocomplete label="target_company" value={targetCompany} onChange={setTargetCompany} suggestions={COMPANY_SUGGESTIONS} placeholder="e.g. Google, Amazon…" />
+              <UnderlineAutocomplete label="target role" value={favoriteRole} onChange={setFavoriteRole} suggestions={ROLE_SUGGESTIONS} placeholder="e.g. Full Stack Developer" />
+              <UnderlineAutocomplete label="target company" value={targetCompany} onChange={setTargetCompany} suggestions={COMPANY_SUGGESTIONS} placeholder="e.g. Google, Amazon…" />
             </div>
 
             <div className="mb-6">
-              <FieldLabel>core_skills</FieldLabel>
+              <FieldLabel>skills</FieldLabel>
               <TagField value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} />
             </div>
 
             <div>
-              <FieldLabel>experience_tier</FieldLabel>
+              <FieldLabel>experience level</FieldLabel>
               <TierButtonGroup options={EXPERIENCE_TIERS} value={experience} onChange={setExperience} />
             </div>
           </Panel>
 
-          <Panel icon={Settings2} title="neural_link_preferences">
+          <Panel icon={Settings2} title="coach preferences">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10.5px] font-bold tracking-[.15em] text-[#cbc3d7] uppercase">coach_tone_parameters</span>
-              <span className="text-[9px] uppercase tracking-[.15em] text-[#6f6f7c] border border-[#494454] px-2 py-0.5">req: restart</span>
+              <span className="text-[10.5px] font-bold tracking-[.15em] text-[#cbc3d7] uppercase">coach tone</span>
+              <span className="text-[9px] uppercase tracking-[.15em] text-[#6f6f7c] border border-[#494454] px-2 py-0.5">applies next session</span>
             </div>
             <div className="mb-6">
               <TierButtonGroup options={COACH_TONES} value={coachTone} onChange={setCoachTone} />
             </div>
 
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10.5px] font-bold tracking-[.15em] text-[#cbc3d7] uppercase">analysis_depth_level</span>
-              <span className="text-[12px] text-[#a3c9ff]">lvl_0{depth} ({DEPTH_LABELS[depth - 1]})</span>
+              <span className="text-[10.5px] font-bold tracking-[.15em] text-[#cbc3d7] uppercase">feedback detail level</span>
+              <span className="text-[12px] text-[#a3c9ff]">level {depth} ({DEPTH_LABELS[depth - 1]})</span>
             </div>
             <div className="flex gap-1.5 h-3 mb-6">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -409,30 +407,30 @@ export default function ProfileView() {
             </div>
 
             <div className="border-t border-[#494454] pt-6 flex flex-col gap-5">
-              <ToggleRow label="real_time_hints" desc="Enable HUD overlays during simulation" checked={hints} onChange={setHints} />
-              <ToggleRow label="auto_transcript_archive" desc="Store sessions in encrypted vault" checked={archive} onChange={setArchive} />
+              <ToggleRow label="live hints" desc="Show helpful tips while you're answering" checked={hints} onChange={setHints} />
+              <ToggleRow label="save my answers" desc="Keep a private copy of your past interview answers" checked={archive} onChange={setArchive} />
             </div>
           </Panel>
         </div>
 
         <div className="flex flex-col gap-8">
-          <Panel icon={Bell} title="notification_protocols">
+          <Panel icon={Bell} title="notifications">
             <div className="flex flex-col gap-5">
               <CheckboxRow
-                label="critical_system_alerts"
-                desc="Downtime, security breaches"
+                label="important alerts"
+                desc="Outages or security issues"
                 checked={notif.critical}
                 onChange={(v) => setNotif((n) => ({ ...n, critical: v }))}
               />
               <CheckboxRow
-                label="session_reminders"
-                desc="Upcoming scheduled drills"
+                label="practice reminders"
+                desc="Reminders about upcoming practice sessions"
                 checked={notif.reminders}
                 onChange={(v) => setNotif((n) => ({ ...n, reminders: v }))}
               />
               <CheckboxRow
-                label="weekly_performance_dump"
-                desc="Aggregated stat report via email"
+                label="weekly summary"
+                desc="A weekly email with your progress"
                 checked={notif.weekly}
                 onChange={(v) => setNotif((n) => ({ ...n, weekly: v }))}
               />
@@ -445,13 +443,13 @@ export default function ProfileView() {
             className="w-full bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold tracking-[.2em] uppercase py-4 hover:bg-[#e9ddff] hover:scale-[1.02] transition-all duration-200 disabled:opacity-60 disabled:hover:scale-100 cursor-pointer"
             style={ctaStyle}
           >
-            {saving ? "committing…" : "commit_changes >>"}
+            {saving ? "saving…" : "save changes >>"}
           </button>
         </div>
       </form>
 
       <div className="text-center text-[10px] uppercase tracking-[.25em] text-[#494454] pt-2">
-        sys_ver 3.4.1 // prepai_terminal // end_of_file
+        prepai settings // v3.4.1
       </div>
     </div>
   );
