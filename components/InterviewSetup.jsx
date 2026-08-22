@@ -259,7 +259,7 @@ export default function InterviewSetup() {
             </div>
 
             <div>
-              <FieldLabel>{"// skills (pick a few)"}</FieldLabel>
+              <FieldLabel>{"// skills (Add a few)"}</FieldLabel>
               <SkillTagField value={skills} onChange={setSkills} suggestions={SKILL_SUGGESTIONS} />
             </div>
 
